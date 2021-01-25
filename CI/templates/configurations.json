@@ -1,0 +1,13 @@
+{
+    "moduleName": "CameraPlugin",
+    "applicationNames": [
+        "CameraPlugin",
+        "CameraSampleApp"
+    ],
+    "sauceLabsInfo": {
+        "InAppBrowserSampleApp": {
+            "androidAPIKey": "3FAE144BC88849A2915A7FEDC8779E5F",
+            "iosAPIKey": "521E07192EF249188A69D165A31D5855"
+        }
+    }
+}

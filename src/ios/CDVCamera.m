@@ -442,6 +442,7 @@ static NSString* toBase64(NSData* data) {
     CDVPluginResult* result = nil;
     BOOL saveToPhotoAlbum = options.saveToPhotoAlbum;
     UIImage* image = nil;
+    NSData *imageData;
 
     switch (options.destinationType) {
         case DestinationTypeNativeUri:
@@ -475,7 +476,7 @@ static NSString* toBase64(NSData* data) {
             image = [self retrieveImage:info options:options];
             NSData* data = [self processImage:image info:info options:options];
             if (data) {
-
+                imageData = data;
                 NSString* extension = options.encodingType == EncodingTypePNG? @"png" : @"jpg";
                 NSString* filePath = [self tempFilePath:extension];
                 NSError* err = nil;
@@ -494,6 +495,7 @@ static NSString* toBase64(NSData* data) {
             image = [self retrieveImage:info options:options];
             NSData* data = [self processImage:image info:info options:options];
             if (data)  {
+                imageData = data;
                 result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:toBase64(data)];
             }
         }
@@ -504,7 +506,7 @@ static NSString* toBase64(NSData* data) {
 
     if (saveToPhotoAlbum && image) {
         ALAssetsLibrary* library = [ALAssetsLibrary new];
-        [library writeImageToSavedPhotosAlbum:image.CGImage orientation:(ALAssetOrientation)(image.imageOrientation) completionBlock:nil];
+        [library writeImageDataToSavedPhotosAlbum:imageData metadata:nil completionBlock:nil];
     }
 
     completion(result);

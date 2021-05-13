@@ -16,6 +16,17 @@ module.exports = function(context) {
                     if (err) {
                       throw new Error('Camera Plugin: Unable to read config.xml: ' + err);
                     }
+                    console.log("Vai entrar no IF")
+                    if (data.includes("<edit-config file=\"app/src/main/AndroidManifest.xml\" mode=\"merge\" target=\"/manifest/application\">")){
+                      console.log("Entrou no IF!")
+                      var result = data.replace(/<\/edit-config>/g, '\t<application android:requestLegacyExternalStorage="true" />\n\t\t</edit-config>');
+                      fs.writeFile(configXML, result, 'utf8', function (err) {
+                      if (err) 
+                        {throw new Error('Camera Plugin: Unable to write into config.xml: ' + err);}
+                      else 
+                        {console.log("Camera Plugin: config.xml patched for using requestLegacyExternalStorage successfuly!");}
+                      })
+                    }
 
                     if (!data.includes("android.media.action.IMAGE_CAPTURE")){
                       var result = data.replace(/<platform name="android">/g, '<platform name="android"><config-file target="AndroidManifest.xml" parent="/*"><queries><intent><action android:name="android.media.action.IMAGE_CAPTURE" /></intent><intent><action android:name="android.intent.action.GET_CONTENT" /></intent></queries></config-file>');

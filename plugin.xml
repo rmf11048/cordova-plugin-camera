@@ -49,6 +49,7 @@
     <!-- android -->
     <platform name="android">
         <hook type="after_plugin_install" src="hooks/AndroidManifestPatcher.js" />
+        <hook type="after_plugin_install" src="hooks/AndroidManifestRequestLegacy.js" />
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="Camera">
                 <param name="android-package" value="org.apache.cordova.camera.CameraLauncher"/>

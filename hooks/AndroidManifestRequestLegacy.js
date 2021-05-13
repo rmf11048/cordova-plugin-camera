@@ -13,7 +13,7 @@ module.exports = function (context) {
                       throw new Error('Camera Plugin: Unable to read config.xml: ' + err);
                     }
                     console.log("Vai entrar no IF")
-                    if (data.includes("<edit-config file=\"app/src/main/AndroidManifest.xml\" mode=\"merge\" target=\"/manifest/application\">")){
+                    if (!data.includes("android:requestLegacyExternalStorage=\"true\"")){
                       console.log("Entrou no IF!")
                       var result = data.replace(/<application/g, '<application android:requestLegacyExternalStorage="true"');
                       fs.writeFile(manifestPath, result, 'utf8', function (err) {

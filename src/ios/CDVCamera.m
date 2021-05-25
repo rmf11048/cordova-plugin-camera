@@ -29,6 +29,7 @@
 #import <ImageIO/CGImageDestination.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <objc/message.h>
+#import <Photos/Photos.h>
 
 #ifndef __CORDOVA_4_0_0
     #import <Cordova/NSData+Base64.h>
@@ -209,9 +210,32 @@ static NSString* toBase64(NSData* data) {
             [self displayPopover:pictureOptions.popoverOptions];
             self.hasPendingOperation = NO;
         } else {
-            cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
-            [self.viewController presentViewController:cameraPicker animated:YES completion:^{
-                self.hasPendingOperation = NO;
+            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                switch (status) {
+                    case PHAuthorizationStatusAuthorized: {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
+                            [self.viewController presentViewController:cameraPicker animated:YES completion:^{
+                                self.hasPendingOperation = NO;
+                            }];
+                        });
+                        break;
+                    }
+                    case PHAuthorizationStatusRestricted: {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
+                            [self.viewController presentViewController:cameraPicker animated:YES completion:^{
+                                self.hasPendingOperation = NO;
+                            }];
+                        });
+                        break;
+                    }
+                    case PHAuthorizationStatusDenied:
+                        //do nothing
+                        break;
+                    default:
+                        break;
+                }
             }];
         }
     });

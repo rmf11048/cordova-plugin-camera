@@ -210,35 +210,51 @@ static NSString* toBase64(NSData* data) {
             [self displayPopover:pictureOptions.popoverOptions];
             self.hasPendingOperation = NO;
         } else {
-            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-                switch (status) {
-                    case PHAuthorizationStatusAuthorized: {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
-                            [self.viewController presentViewController:cameraPicker animated:YES completion:^{
-                                self.hasPendingOperation = NO;
-                            }];
-                        });
-                        break;
-                    }
-                    case PHAuthorizationStatusRestricted: {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
-                            [self.viewController presentViewController:cameraPicker animated:YES completion:^{
-                                self.hasPendingOperation = NO;
-                            }];
-                        });
-                        break;
-                    }
-                    case PHAuthorizationStatusDenied:
-                        //do nothing
-                        break;
-                    default:
-                        break;
-                }
-            }];
+            __weak CDVCamera* weakSelf = self;
+            if (@available(iOS 14,*)){
+                [PHPhotoLibrary requestAuthorizationForAccessLevel:(PHAccessLevelReadWrite) handler:^(PHAuthorizationStatus status) {
+                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+                }];
+            }
+            else{
+                [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+                }];
+            }
         }
     });
+}
+
+- (void)handlePhotoLibraryPermissionsWithStatus:(PHAuthorizationStatus)status andCameraPicker:(CDVCameraPicker*) cameraPicker
+{
+    typedef void (^ReturnBlock)(void);
+    ReturnBlock block = ^void(){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
+            [self.viewController presentViewController:cameraPicker animated:YES completion:^{
+                self.hasPendingOperation = NO;
+            }];
+        });
+    };
+    
+    switch (status) {
+        case PHAuthorizationStatusAuthorized: {
+            block();
+            break;
+        }
+        case PHAuthorizationStatusLimited: {
+            block();
+            break;
+        }
+        case PHAuthorizationStatusDenied:
+            //do nothing
+            break;
+        case PHAuthorizationStatusRestricted:
+            //do nothing
+            break;
+        default:
+            break;
+    }
 }
 
 - (void)sendNoPermissionResult:(NSString*)callbackId

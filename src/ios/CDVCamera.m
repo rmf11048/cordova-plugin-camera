@@ -82,6 +82,7 @@ static NSString* toBase64(NSData* data) {
     pictureOptions.saveToPhotoAlbum = [[command argumentAtIndex:9 withDefault:@(NO)] boolValue];
     pictureOptions.popoverOptions = [command argumentAtIndex:10 withDefault:nil];
     pictureOptions.cameraDirection = [[command argumentAtIndex:11 withDefault:@(UIImagePickerControllerCameraDeviceRear)] unsignedIntegerValue];
+    pictureOptions.actionType = [command argumentAtIndex:12 withDefault:@("")];
 
     pictureOptions.popoverSupported = NO;
     pictureOptions.usesGeolocation = NO;
@@ -210,18 +211,26 @@ static NSString* toBase64(NSData* data) {
             [self displayPopover:pictureOptions.popoverOptions];
             self.hasPendingOperation = NO;
         } else {
-            __weak CDVCamera* weakSelf = self;
-//not available for MABS 6, should be used in the future
-//            if (@available(iOS 14,*)){
-//                [PHPhotoLibrary requestAuthorizationForAccessLevel:(PHAccessLevelReadWrite) handler:^(PHAuthorizationStatus status) {
-//                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
-//                }];
-//            }
-//            else{
-                [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+            if ([pictureOptions.actionType isEqualToString:@"takePicture"]) {
+                cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
+                [self.viewController presentViewController:cameraPicker animated:YES completion:^{
+                    self.hasPendingOperation = NO;
                 }];
-//            }
+            }
+            else if ([pictureOptions.actionType isEqualToString:@"choosePicture"]){
+                __weak CDVCamera* weakSelf = self;
+    //not available for MABS 6, should be used in the future
+    //            if (@available(iOS 14,*)){
+    //                [PHPhotoLibrary requestAuthorizationForAccessLevel:(PHAccessLevelReadWrite) handler:^(PHAuthorizationStatus status) {
+    //                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+    //                }];
+    //            }
+    //            else{
+                    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                        [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+                    }];
+    //            }
+            }
         }
     });
 }

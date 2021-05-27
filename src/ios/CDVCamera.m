@@ -235,10 +235,6 @@ static NSString* toBase64(NSData* data) {
             block();
             break;
         }
-        case PHAuthorizationStatusLimited: {
-            block();
-            break;
-        }
         case PHAuthorizationStatusDenied:
             //do nothing
             break;

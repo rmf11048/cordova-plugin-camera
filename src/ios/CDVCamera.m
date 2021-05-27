@@ -211,9 +211,17 @@ static NSString* toBase64(NSData* data) {
             self.hasPendingOperation = NO;
         } else {
             __weak CDVCamera* weakSelf = self;
-            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-                [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
-            }];
+//not available for MABS 6, should be used in the future
+//            if (@available(iOS 14,*)){
+//                [PHPhotoLibrary requestAuthorizationForAccessLevel:(PHAccessLevelReadWrite) handler:^(PHAuthorizationStatus status) {
+//                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+//                }];
+//            }
+//            else{
+                [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+                }];
+//            }
         }
     });
 }
@@ -235,6 +243,11 @@ static NSString* toBase64(NSData* data) {
             block();
             break;
         }
+//not available for MABS 6, should be used in the future
+//        case PHAuthorizationStatusLimited: {
+//            block();
+//            break;
+//        }
         case PHAuthorizationStatusDenied:
             //do nothing
             break;

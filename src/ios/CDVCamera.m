@@ -211,16 +211,9 @@ static NSString* toBase64(NSData* data) {
             self.hasPendingOperation = NO;
         } else {
             __weak CDVCamera* weakSelf = self;
-            if (@available(iOS 14,*)){
-                [PHPhotoLibrary requestAuthorizationForAccessLevel:(PHAccessLevelReadWrite) handler:^(PHAuthorizationStatus status) {
-                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
-                }];
-            }
-            else{
-                [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
-                }];
-            }
+            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+            }];
         }
     });
 }

@@ -36,6 +36,7 @@
 #endif
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
+#define SOURCE_TYPE_PHOTO_LIBRARY 0
 
 static NSSet* org_apache_cordova_validArrowDirections;
 
@@ -82,7 +83,6 @@ static NSString* toBase64(NSData* data) {
     pictureOptions.saveToPhotoAlbum = [[command argumentAtIndex:9 withDefault:@(NO)] boolValue];
     pictureOptions.popoverOptions = [command argumentAtIndex:10 withDefault:nil];
     pictureOptions.cameraDirection = [[command argumentAtIndex:11 withDefault:@(UIImagePickerControllerCameraDeviceRear)] unsignedIntegerValue];
-    pictureOptions.actionType = [command argumentAtIndex:12 withDefault:@("")];
 
     pictureOptions.popoverSupported = NO;
     pictureOptions.usesGeolocation = NO;
@@ -211,13 +211,16 @@ static NSString* toBase64(NSData* data) {
             [self displayPopover:pictureOptions.popoverOptions];
             self.hasPendingOperation = NO;
         } else {
-            if ([pictureOptions.actionType isEqualToString:@"takePicture"]) {
+            
+            if (pictureOptions.sourceType == UIImagePickerControllerSourceTypeCamera) {
                 cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
                 [self.viewController presentViewController:cameraPicker animated:YES completion:^{
                     self.hasPendingOperation = NO;
                 }];
             }
-            else if ([pictureOptions.actionType isEqualToString:@"choosePicture"]){
+            
+            //using constant instead of UIImagePickerControllerSoureTypePhotoLibrary because it is deprecated and will be removed soon
+            else if (pictureOptions.sourceType == SOURCE_TYPE_PHOTO_LIBRARY){
                 __weak CDVCamera* weakSelf = self;
     //not available for MABS 6, should be used in the future
     //            if (@available(iOS 14,*)){

@@ -29,12 +29,14 @@
 #import <ImageIO/CGImageDestination.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <objc/message.h>
+#import <Photos/Photos.h>
 
 #ifndef __CORDOVA_4_0_0
     #import <Cordova/NSData+Base64.h>
 #endif
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
+#define SOURCE_TYPE_PHOTO_LIBRARY 0
 
 static NSSet* org_apache_cordova_validArrowDirections;
 
@@ -209,12 +211,64 @@ static NSString* toBase64(NSData* data) {
             [self displayPopover:pictureOptions.popoverOptions];
             self.hasPendingOperation = NO;
         } else {
+            
+            if (pictureOptions.sourceType == UIImagePickerControllerSourceTypeCamera) {
+                cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
+                [self.viewController presentViewController:cameraPicker animated:YES completion:^{
+                    self.hasPendingOperation = NO;
+                }];
+            }
+            
+            //using constant instead of UIImagePickerControllerSoureTypePhotoLibrary because it is deprecated and will be removed soon
+            else if (pictureOptions.sourceType == SOURCE_TYPE_PHOTO_LIBRARY){
+                __weak CDVCamera* weakSelf = self;
+    //not available for MABS 6, should be used in the future
+    //            if (@available(iOS 14,*)){
+    //                [PHPhotoLibrary requestAuthorizationForAccessLevel:(PHAccessLevelReadWrite) handler:^(PHAuthorizationStatus status) {
+    //                    [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+    //                }];
+    //            }
+    //            else{
+                    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+                        [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+                    }];
+    //            }
+            }
+        }
+    });
+}
+
+- (void)handlePhotoLibraryPermissionsWithStatus:(PHAuthorizationStatus)status andCameraPicker:(CDVCameraPicker*) cameraPicker
+{
+    typedef void (^ReturnBlock)(void);
+    ReturnBlock block = ^void(){
+        dispatch_async(dispatch_get_main_queue(), ^{
             cameraPicker.modalPresentationStyle = UIModalPresentationCurrentContext;
             [self.viewController presentViewController:cameraPicker animated:YES completion:^{
                 self.hasPendingOperation = NO;
             }];
+        });
+    };
+    
+    switch (status) {
+        case PHAuthorizationStatusAuthorized: {
+            block();
+            break;
         }
-    });
+//not available for MABS 6, should be used in the future
+//        case PHAuthorizationStatusLimited: {
+//            block();
+//            break;
+//        }
+        case PHAuthorizationStatusDenied:
+            //do nothing
+            break;
+        case PHAuthorizationStatusRestricted:
+            //do nothing
+            break;
+        default:
+            break;
+    }
 }
 
 - (void)sendNoPermissionResult:(NSString*)callbackId

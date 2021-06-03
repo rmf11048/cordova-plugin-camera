@@ -8,5 +8,7 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
-## 2021-05-28
+
+## [4.0.1-OS7]
+### Fixes
 - Fix: Fixed iOS implementation to ask for photo library permissions when needed (https://outsystemsrd.atlassian.net/browse/RMET-733)

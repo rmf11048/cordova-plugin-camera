@@ -8,6 +8,9 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
+## [4.0.1-OS8]
+### Fixes
+- Fix: Fixed Android conflict with file providers (https://outsystemsrd.atlassian.net/browse/RMET-738)
 
 ## [4.0.1-OS7]
 ### Fixes

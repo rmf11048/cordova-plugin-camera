@@ -1009,19 +1009,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 galleryUri = Uri.fromFile(localFile);
                 writeUncompressedImage(fileStream, galleryUri);
                 try {
-                    String mimeType = FileHelper.getMimeType(imageUrl.toString(), cordova);
-                    if (JPEG_MIME_TYPE.equalsIgnoreCase(mimeType)) {
-                        //  ExifInterface doesn't like the file:// prefix
-                        String filePath = galleryUri.toString().replace("file://", "");
-                        // read exifData of source
-                        exifData = new ExifHelper();
-                        exifData.createInFile(filePath);
-                        exifData.readExifData();
-                        // Use ExifInterface to pull rotation information
-                        if (this.correctOrientation) {
-                            ExifInterface exif = new ExifInterface(filePath);
-                            rotate = exifToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED));
-                        }
+                    //  ExifInterface doesn't like the file:// prefix
+                    String filePath = galleryUri.toString().replace("file://", "");
+                    // read exifData of source
+                    exifData = new ExifHelper();
+                    exifData.createInFile(filePath);
+                    exifData.readExifData();
+                    // Use ExifInterface to pull rotation information
+                    if (this.correctOrientation) {
+                        ExifInterface exif = new ExifInterface(filePath);
+                        rotate = exifToDegrees(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED));
                     }
                 } catch (Exception oe) {
                     LOG.w(LOG_TAG,"Unable to read Exif data: "+ oe.toString());

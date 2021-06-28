@@ -39,8 +39,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
+import androidx.core.content.FileProvider;
 import android.util.Base64;
+
+import com.outsystems.imageeditor.view.ImageEditorActivity;
 
 import org.apache.cordova.BuildHelper;
 import org.apache.cordova.CallbackContext;
@@ -625,6 +627,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         this.cleanup(FILE_URI, this.imageUri, galleryUri, bitmap);
         bitmap = null;
+
+
+
     }
 
     //private String getPicturesPath() {
@@ -740,6 +745,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         String fileLocation = FileHelper.getRealPath(uri, this.cordova);
         LOG.d(LOG_TAG, "File location is: " + fileLocation);
+
+        hackIntoEditor(fileLocation);
+
+
 
         String uriString = uri.toString();
         String mimeType = FileHelper.getMimeType(uriString, this.cordova);
@@ -1416,4 +1425,14 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
         this.callbackContext = callbackContext;
     }
+
+
+    private void hackIntoEditor(String imageUri) {
+
+        Intent editIntent = new Intent(this.cordova.getActivity(), ImageEditorActivity.class);
+        editIntent.putExtra(ImageEditorActivity.IMAGE_URI_EXTRAS, imageUri);
+        this.cordova.getActivity().startActivity(editIntent);
+
+    }
+
 }

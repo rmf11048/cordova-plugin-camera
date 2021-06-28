@@ -48,15 +48,25 @@
 
     <!-- android -->
     <platform name="android">
+
         <hook type="after_plugin_install" src="hooks/AndroidManifestPatcher.js" />
+
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="Camera">
                 <param name="android-package" value="org.apache.cordova.camera.CameraLauncher"/>
             </feature>
+
+            <preference name="GradlePluginKotlinEnabled" value="true" />
+            <preference name="GradlePluginKotlinCodeStyle" value="official" />
+            <preference name="GradlePluginKotlinVersion" value="1.3.50" />
+            <preference name="AndroidXEnabled" value="true"/>
+
         </config-file>
+
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         </config-file>
+
         <config-file target="AndroidManifest.xml" parent="application">
           <provider
               android:name="org.apache.cordova.camera.FileProvider"
@@ -67,6 +77,7 @@
                   android:name="android.support.FILE_PROVIDER_PATHS"
                   android:resource="@xml/camera_provider_paths"/>
           </provider>
+          <activity android:name="com.outsystems.imageeditor.view.ImageEditorActivity" />
         </config-file>
 
         <source-file src="src/android/CameraLauncher.java" target-dir="src/org/apache/cordova/camera" />
@@ -76,11 +87,30 @@
         <source-file src="src/android/GalleryPathVO.java" target-dir="src/org/apache/cordova/camera" />
         <source-file src="src/android/xml/camera_provider_paths.xml" target-dir="res/xml" />
 
+        <!-- image editor -->
+        <source-file src="src/android/com/outsystems/imageeditor/view/ImageCropperView.kt" target-dir="app/src/main/kotlin/com/outsystems/imageeditor/view"/>
+        <source-file src="src/android/com/outsystems/imageeditor/view/ImageEditorActivity.kt" target-dir="app/src/main/kotlin/com/outsystems/imageeditor/view"/>
+        <source-file src="src/android/com/outsystems/imageeditor/view/ImageEditorController.kt" target-dir="app/src/main/kotlin/com/outsystems/imageeditor/view"/>
+        <source-file src="src/android/com/outsystems/imageeditor/view/ImageEditorView.kt" target-dir="app/src/main/kotlin/com/outsystems/imageeditor/view"/>
+        
+        <source-file src="src/android/com/outsystems/imageeditor/controller/ImageEditorControllerImpl.kt" target-dir="app/src/main/kotlin/com/outsystems/imageeditor/controller"/>
+        <source-file src="src/android/com/outsystems/imageeditor/controller/ImageEditorFileManager.kt" target-dir="app/src/main/kotlin/com/outsystems/imageeditor/controller"/>
+        <source-file src="src/android/com/outsystems/imageeditor/controller/ImageEditorSaveImage.kt" target-dir="app/src/main/kotlin/com/outsystems/imageeditor/controller"/>
+        
+        <source-file src="src/android/xml/imageeditor/layout/activity_image_editor.xml" target-dir="res/layout" />
+        <source-file src="src/android/xml/imageeditor/layout/image_editor_view.xml" target-dir="res/layout" />
+        <source-file src="src/android/xml/imageeditor/layout-land/image_editor_view.xml" target-dir="res/layout-land" />
+
         <js-module src="www/CameraPopoverHandle.js" name="CameraPopoverHandle">
             <clobbers target="CameraPopoverHandle" />
-          </js-module>
+        </js-module>
 
         <framework src="libs/android/build.gradle" custom="true" type="gradleReference" />
+        <framework src="androidx.appcompat:appcompat:1.3.0" />
+        <framework src="androidx.constraintlayout:constraintlayout:2.0.4" />
+        <framework src="org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.4.3" />
+        <framework src="org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.3" />
+        
 
       </platform>
 

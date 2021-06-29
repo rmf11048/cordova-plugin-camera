@@ -1,5 +1,7 @@
 package com.outsystems.imageeditor.view
 
+
+
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
@@ -11,8 +13,8 @@ import android.R
 import kotlin.math.sqrt
 
 class ImageCropperView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null
+  context: Context,
+  attrs: AttributeSet? = null
 ) : View(context, attrs)  {
 
 
@@ -35,7 +37,7 @@ class ImageCropperView @JvmOverloads constructor(
 
 
   private val backgroundPaint: Paint
-  private val cropPaint: Paint
+  private val rectanglePaint: Paint
   private val borderPaint: Paint
   private val cornerPaint: Paint
 
@@ -45,15 +47,15 @@ class ImageCropperView @JvmOverloads constructor(
   companion object {
     private const val TAG = "ImageCropperView"
 
-    private const val BORDER_WIDTH = 1
-    private const val DEFAULT_BACKGROUND_ALPHA = 0.8f
+    private const val BORDER_WIDTH = 2
+    private const val DEFAULT_BACKGROUND_ALPHA = 0.7f
     private const val COLOR_DENSITY = 255f
 
-    private const val CORNER_WIDTH = 3
-    private const val CORNER_HEIGHT = 30
+    private const val CORNER_WIDTH = 6
+    private const val CORNER_HEIGHT = 60
     private const val CORNER_TOUCH_RADIUS = 60
 
-    private const val BORDER_HEIGHT = 30
+    private const val BORDER_HEIGHT = 60
     private const val BORDER_TOUCH_RADIUS = 60
 
     private const val MIN_CROP_WIDTH = BORDER_TOUCH_RADIUS * 3
@@ -74,7 +76,7 @@ class ImageCropperView @JvmOverloads constructor(
       alpha = (backgroundAlpha * COLOR_DENSITY).toInt()
     }
 
-    cropPaint = Paint().apply {
+    rectanglePaint = Paint().apply {
       xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
     }
 
@@ -382,7 +384,7 @@ class ImageCropperView @JvmOverloads constructor(
     val top = topLeftCorner.y.toFloat()
     val right = bottomRightCorner.x.toFloat()
     val bottom = bottomRightCorner.y.toFloat()
-    canvas.drawRect(left, top, right, bottom, cropPaint)
+    canvas.drawRect(left, top, right, bottom, rectanglePaint)
 
   }
   private fun drawBorder(canvas: Canvas) {
@@ -545,7 +547,7 @@ class ImageCropperView @JvmOverloads constructor(
   }
   private inner class RectangleBorder(lowest: RectangleCorner, highest: RectangleCorner) {
 
-    var lowestAdjacentXY: RectangleCorner = lowest
+    var lowestAdjacentXY:  RectangleCorner = lowest
     var highestAdjacentXY: RectangleCorner = highest
     var typeRectangle : RectangleBorderType = RectangleBorderType.X
 

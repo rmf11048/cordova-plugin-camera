@@ -1,5 +1,6 @@
 package com.outsystems.imageeditor.view
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -14,6 +15,7 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.ImageView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Default
@@ -35,8 +37,8 @@ class ImageEditorView @JvmOverloads constructor(
   private val cancelButton by lazy { findViewById<Button>(R.id.cancelButton) }
   private val okButton by lazy { findViewById<Button>(R.id.OKButton) }
 
-  private val rotateButton by lazy { findViewById<Button>(R.id.rotateButton) }
-  private val flipButton by lazy { findViewById<Button>(R.id.flipButton) }
+  private val rotateButton by lazy { findViewById<ImageButton>(R.id.rotateButton) }
+  private val flipButton by lazy { findViewById<ImageButton>(R.id.flipButton) }
 
   private var scaleGestureDetector: ScaleGestureDetector
   private var scaleGestureListener: ScaleListener
@@ -51,15 +53,7 @@ class ImageEditorView @JvmOverloads constructor(
     LayoutInflater.from(context).inflate(R.layout.image_editor_view, this)
 
     cancelButton.setOnClickListener{
-
-
-      val f = Rect().apply { imageView.getHitRect(this)}
-
-      val x = f.left
-      val y = f.top
-
-      Log.d(TAG, "$x, $y")
-
+      (this.context as Activity).finish()
     }
 
     scaleGestureListener = ScaleListener()

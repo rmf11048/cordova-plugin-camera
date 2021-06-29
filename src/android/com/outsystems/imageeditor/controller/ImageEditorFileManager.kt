@@ -5,27 +5,32 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Environment
 import android.provider.MediaStore
+import java.io.File
+import java.io.FileOutputStream
 import java.io.OutputStream
 
 
 class ImageEditorFileManager : ImageEditorSaveImage {
 
 
-    override fun saveImage(context: Context, folderName: String, bitmap: Bitmap) {
+    override fun saveImage(context: Context, path: String, bitmap: Bitmap) {
 
+        val file = File(path) // the File to save to
+        var fOut = FileOutputStream(file)
 
-        val values = contentValues()
-        values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$folderName")
-        values.put(MediaStore.Images.Media.IS_PENDING, true)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut)
 
-        val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-        if (uri != null) {
-            saveImageToStream(bitmap, context.contentResolver.openOutputStream(uri))
-            values.put(MediaStore.Images.Media.IS_PENDING, false)
-            context.contentResolver.update(uri, values, null, null)
-            showImageInGallery(context, uri)
-        }
+        fOut.flush()
+        fOut.close() // do not forget to close the stream
+
+        MediaStore.Images.Media.insertImage(
+            context.contentResolver,
+            file.absolutePath,
+            file.name,
+            file.name
+        )
 
     }
 

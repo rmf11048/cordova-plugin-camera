@@ -3,6 +3,7 @@ package com.outsystems.imageeditor.view
 import android.net.Uri
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import com.outsystems.rd.LocalCameraSampleApp.R
 
 class ImageEditorActivity : Activity() {
@@ -15,7 +16,11 @@ class ImageEditorActivity : Activity() {
         setContentView(R.layout.activity_image_editor)
 
         intent.extras?.let {
-            editorView.setUri(Uri.parse(it.getString(IMAGE_URI_EXTRAS)))
+            val sourceUri = Uri.parse(it.getString(IMAGE_URI_EXTRAS))
+            val resultUri = Uri.parse(it.getString("output"))
+            editorView.setUri(sourceUri)
+            editorView.resultUri = resultUri
+            Log.d("IMAGEEDITORACTIVITY", "Image URI: $sourceUri")
         }
 
     }

@@ -1,7 +1,9 @@
 package com.outsystems.imageeditor.view
 
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Rect
@@ -17,12 +19,12 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
-import kotlinx.coroutines.*
-import kotlinx.coroutines.Dispatchers.Default
 import com.outsystems.imageeditor.controller.ImageEditorControllerImpl
 import com.outsystems.imageeditor.controller.ImageEditorFileManager
 import com.outsystems.imageeditor.controller.ImageEditorSaveImage
 import com.outsystems.rd.LocalCameraSampleApp.R
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.Default
 
 
 class ImageEditorView @JvmOverloads constructor(
@@ -46,6 +48,8 @@ class ImageEditorView @JvmOverloads constructor(
 
   private var imageEditorController : ImageEditorController = ImageEditorControllerImpl()
   private var imageEditorSave : ImageEditorSaveImage = ImageEditorFileManager()
+
+   var resultUri: Uri? = null
 
 
   init {
@@ -127,12 +131,17 @@ class ImageEditorView @JvmOverloads constructor(
         dimensions will be the same as original.
         */
         val scaledImage = Bitmap.createScaledBitmap(sourceImage, scaledImageRect.width(), scaledImageRect.height(), false)
-
         val newImage = imageEditorController.crop(scaledImage, imageCropRect)
 
-        withContext(Dispatchers.IO){
-          imageEditorSave.saveImage(context, "ImageEditor", newImage)
+
+
+        resultUri?.let {
+          imageEditorSave.saveImage(context, it.toString(), newImage)
         }
+
+        (context as Activity).setResult(RESULT_OK)
+        (context as Activity).finish();
+
 
       }
 
@@ -145,6 +154,7 @@ class ImageEditorView @JvmOverloads constructor(
       withContext(Dispatchers.Main){
         updateImageView(newImage)
       }
+
     }
   }
 

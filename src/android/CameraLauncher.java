@@ -1438,11 +1438,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             croppedFilePath = createCaptureFile(this.encodingType, System.currentTimeMillis() + "").getAbsolutePath();
             croppedUri = Uri.parse(croppedFilePath);
-            cropIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            cropIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            cropIntent.putExtra("output", croppedFilePath);
 
-            cropIntent.putExtra(ImageEditorActivity.IMAGE_URI_EXTRAS, picUri.toString());
+            cropIntent.putExtra(ImageEditorActivity.IMAGE_OUTPUT_URI_EXTRAS, croppedFilePath);
+            cropIntent.putExtra(ImageEditorActivity.IMAGE_INPUT_URI_EXTRAS, picUri.toString());
 
             if (this.cordova != null) {
                 this.cordova.startActivityForResult(

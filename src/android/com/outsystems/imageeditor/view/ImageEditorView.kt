@@ -3,7 +3,6 @@ package com.outsystems.imageeditor.view
 import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Rect
@@ -15,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -42,6 +42,8 @@ class ImageEditorView @JvmOverloads constructor(
   private val rotateButton by lazy { findViewById<ImageButton>(R.id.rotateButton) }
   private val flipButton by lazy { findViewById<ImageButton>(R.id.flipButton) }
 
+  private val editLayout by lazy { findViewById<ImageButton>(R.id.imageEditorView) }
+
   private var scaleGestureDetector: ScaleGestureDetector
   private var scaleGestureListener: ScaleListener
   private var scaleFactor = 1.0f
@@ -49,7 +51,7 @@ class ImageEditorView @JvmOverloads constructor(
   private var imageEditorController : ImageEditorController = ImageEditorControllerImpl()
   private var imageEditorSave : ImageEditorSaveImage = ImageEditorFileManager()
 
-   var resultUri: Uri? = null
+  private var resultUri: Uri? = null
 
 
   init {
@@ -78,16 +80,17 @@ class ImageEditorView @JvmOverloads constructor(
 
   }
 
-  fun setUri(uri: Uri) {
+  fun setInputImageUri(uri: Uri) {
     imageView.setImageURI(uri)
     imageView.requestLayout()
+  }
+  fun setOutputImageUri(uri: Uri){
+    resultUri = uri
   }
 
   override fun onDraw(canvas: Canvas?) {
     super.onDraw(canvas)
-
     updateCropViewLimitFrame()
-
   }
   override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
     //scaleGestureDetector.onTouchEvent(ev)

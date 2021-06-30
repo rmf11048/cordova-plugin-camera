@@ -53,10 +53,10 @@ class ImageCropperView @JvmOverloads constructor(
 
     private const val CORNER_WIDTH = 6
     private const val CORNER_HEIGHT = 60
-    private const val CORNER_TOUCH_RADIUS = 60
+    private const val CORNER_TOUCH_RADIUS = 120
 
     private const val BORDER_HEIGHT = 60
-    private const val BORDER_TOUCH_RADIUS = 60
+    private const val BORDER_TOUCH_RADIUS = 120
 
     private const val MIN_CROP_WIDTH = BORDER_TOUCH_RADIUS * 3
     private const val MIN_CROP_HEIGHT = BORDER_TOUCH_RADIUS * 3
@@ -72,7 +72,7 @@ class ImageCropperView @JvmOverloads constructor(
     setLayerType(LAYER_TYPE_HARDWARE, null)
 
     backgroundPaint = Paint().apply {
-      color = ContextCompat.getColor(context, R.color.black)
+      color = Color.BLACK
       alpha = (backgroundAlpha * COLOR_DENSITY).toInt()
     }
 
@@ -83,12 +83,12 @@ class ImageCropperView @JvmOverloads constructor(
     borderPaint = Paint().apply {
       strokeWidth = BORDER_WIDTH.toFloat()
       style = Paint.Style.FILL_AND_STROKE
-      color = ContextCompat.getColor(context, R.color.white)
+      color = Color.WHITE
     }
 
     cornerPaint = Paint().apply {
       style = Paint.Style.FILL_AND_STROKE
-      color = ContextCompat.getColor(context, R.color.white)
+      color = Color.WHITE
     }
 
   }

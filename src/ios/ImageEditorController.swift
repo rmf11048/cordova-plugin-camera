@@ -2,7 +2,7 @@ import UIKit
 import CoreGraphics
 
 protocol ImageEditorDelegate {
-    func finishEditing(_ result: Result<Void, Error>)
+    func finishEditing(_ result: Result<UIImage, Error>)
     func didCancelEdit()
 }
 
@@ -21,8 +21,14 @@ struct ImageEditorControllerImpl: ImageEditorController {
     let delegate: ImageEditorDelegate?
     
     func saveImage(_ image: UIImage, completionHandler: @escaping ((Result<Void, Error>) -> ())) {
-        saveImageFeature.saveImage(image) {
-            delegate?.finishEditing($0)
+        let fixedImage = image.fixedOrientation()
+        saveImageFeature.saveImage(fixedImage) {
+            switch $0 {
+            case .success:
+                delegate?.finishEditing(.success(fixedImage))
+            case let .failure(error):
+                delegate?.finishEditing(.failure(error))
+            }
             completionHandler($0)
         }
     }

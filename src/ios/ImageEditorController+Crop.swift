@@ -28,7 +28,7 @@ private extension UIImage {
             rectTransform = CGAffineTransform(rotationAngle: rad(-90)).translatedBy(x: -self.size.width, y: 0).translatedBy(x: 0, y: self.size.height)
             scale = CGPoint(x: 1, y: -1)
         case .upMirrored:
-            rectTransform = .identity.translatedBy(x: self.size.width, y: 0)
+            rectTransform = CGAffineTransform.identity.translatedBy(x: self.size.width, y: 0)
             scale = CGPoint(x: -1, y: 1)
         case .downMirrored:
             rectTransform = CGAffineTransform(rotationAngle: rad(-180)).translatedBy(x: -self.size.width, y: -self.size.height).translatedBy(x: self.size.width, y: 0)

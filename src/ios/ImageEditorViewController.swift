@@ -17,7 +17,7 @@ final class ImageEditorViewController: UIViewController {
     private let rotatingGesture = UIRotationGestureRecognizer()
     private let rectPanGesture = UIPanGestureRecognizer()
     private let imagePanGesture = UIPanGestureRecognizer()
-    private let originalImage: UIImage
+    private let originalImage: UIImage?
     private var cropRect: CGRect = .zero
     private var rotationDegree: Double = 0
     private var scalingFactor: Double = 0
@@ -49,13 +49,13 @@ final class ImageEditorViewController: UIViewController {
     }
     
     private lazy var rotateLeftButton: UIButton = {
-        let rotateLeftButton = ActionButton(image: UIImage(systemName: "rotate.left.fill"))
+        let rotateLeftButton = ActionButton(image: UIImage(named: "rotate"))
         rotateLeftButton.addTarget(self, action: #selector(rotateLeft(_:)), for: .touchUpInside)
         return rotateLeftButton
     }()
     
     private lazy var flipHorizontalyButton: UIButton = {
-        let flipHorizontalyButton = ActionButton(image: UIImage(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right.fill"))
+        let flipHorizontalyButton = ActionButton(image: UIImage(named: "flip"))
         flipHorizontalyButton.addTarget(self, action: #selector(flipHorizontaly(_:)), for: .touchUpInside)
         return flipHorizontalyButton
     }()
@@ -71,7 +71,7 @@ final class ImageEditorViewController: UIViewController {
         return buttonsMainStack
     }()
     
-    init(image: UIImage, controller: ImageEditorController) {
+    init(image: UIImage?, controller: ImageEditorController) {
         self.originalImage = image
         self.controller = controller
         self.imageView = ScaledImageView(image: image)
@@ -246,7 +246,7 @@ extension ImageEditorViewController {
     }
 }
 
-private class ActionButtons: UIButton {
+private class ActionButton: UIButton {
     
     init(image: UIImage?) {
         super.init(frame: .zero)
@@ -260,5 +260,9 @@ private class ActionButtons: UIButton {
             widthAnchor.constraint(equalToConstant: 32),
             heightAnchor.constraint(equalToConstant: 32)
         ])
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }

@@ -30,6 +30,7 @@
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <objc/message.h>
 #import <Photos/Photos.h>
+#import "OutSystems-Swift.h"
 
 #ifndef __CORDOVA_4_0_0
     #import <Cordova/NSData+Base64.h>

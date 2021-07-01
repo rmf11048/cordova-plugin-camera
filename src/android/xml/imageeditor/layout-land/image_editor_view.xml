@@ -4,12 +4,13 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@android:color/black"
         android:layout_height="match_parent">
 
 
     <LinearLayout
         android:id="@+id/operationsToolBar"
-        android:layout_width="75dp"
+        android:layout_width="60dp"
         android:layout_height="match_parent"
         android:background="@android:color/black"
 
@@ -77,7 +78,7 @@
 
         <Button
             android:id="@+id/OKButton"
-            android:layout_width="75dp"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:text="OK"
@@ -89,8 +90,8 @@
         android:id="@+id/imageEditorView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-
-        android:background="@android:color/black"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/operationsToolBar"
         app:layout_constraintStart_toStartOf="parent"
@@ -98,7 +99,7 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:adjustViewBounds="true">

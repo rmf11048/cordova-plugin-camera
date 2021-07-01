@@ -235,12 +235,17 @@ class ImageCropperView @JvmOverloads constructor(
     this.limitsFrame = frame
     limitRectangleToLimits()
   }
+  fun getLimitFrame(): RectF {
+    return limitsFrame
+  }
+
+
   fun getFrame(): RectF {
     return RectF().apply {
-      top = topLeftCorner.y.toFloat()
-      left = topLeftCorner.x.toFloat()
-      bottom = bottomRightCorner.y.toFloat()
-      right = bottomRightCorner.x.toFloat()
+      top = topLeftCorner.y.toFloat() - limitsFrame.top
+      left = topLeftCorner.x.toFloat() - limitsFrame.left
+      bottom = bottomRightCorner.y.toFloat() - limitsFrame.top
+      right = bottomRightCorner.x.toFloat() - limitsFrame.left
     }
   }
 
@@ -248,7 +253,7 @@ class ImageCropperView @JvmOverloads constructor(
   private fun moveCorner(x: Int, y: Int) {
     selectedCorner?.let {
 
-      Log.d(TAG, "${topLeftCorner.x} ${topLeftCorner.y}")
+      Log.d(TAG, "TopLeftCorner: ${topLeftCorner.x} ${topLeftCorner.y}, ")
 
       val limitedX = limitXCoordinateToLimits(x)
       it.x = limitedX
@@ -282,6 +287,8 @@ class ImageCropperView @JvmOverloads constructor(
 
   }
   private fun moveRectangle(x: Int, y: Int) {
+
+    Log.d(TAG, "TopLeftCorner: ${topLeftCorner.x - limitsFrame.left} ${topLeftCorner.y - limitsFrame.top}")
 
     var dx = -(touchStartPoint.x - x)
     var dy = -(touchStartPoint.y - y)
@@ -371,8 +378,6 @@ class ImageCropperView @JvmOverloads constructor(
     val checkRight = x < topRightCorner.x
     val checkTop = y > topLeftCorner.y
     val checkBottom = y < bottomLeftCorner.y
-
-    Log.d(TAG, "$checkLeft, $checkRight, $checkTop, $checkBottom")
     return checkLeft && checkRight && checkTop && checkBottom
   }
 
@@ -438,7 +443,7 @@ class ImageCropperView @JvmOverloads constructor(
 
 
   private fun drawTopLeftCorner(canvas : Canvas){
-    var corner = topLeftCorner
+    val corner = topLeftCorner
     //Vertical
     canvas.drawRect(
       (corner.x - corner.width).toFloat(),
@@ -458,7 +463,7 @@ class ImageCropperView @JvmOverloads constructor(
   }
   private fun drawBottomLeftCorner(canvas : Canvas){
 
-    var corner = bottomLeftCorner
+    val corner = bottomLeftCorner
     //Vertical
     canvas.drawRect(
       (corner.x - corner.width).toFloat(),
@@ -478,7 +483,7 @@ class ImageCropperView @JvmOverloads constructor(
   }
   private fun drawTopRightCorner(canvas : Canvas){
 
-    var corner = topRightCorner
+    val corner = topRightCorner
     //Vertical
     canvas.drawRect(
       (corner.x - corner.width).toFloat(),
@@ -498,7 +503,7 @@ class ImageCropperView @JvmOverloads constructor(
   }
   private fun drawBottomRightCorner(canvas : Canvas){
 
-    var corner = bottomRightCorner
+    val corner = bottomRightCorner
     //Vertical
     canvas.drawRect(
       (corner.x - corner.width).toFloat(),

@@ -14,7 +14,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
@@ -25,6 +24,7 @@ import com.outsystems.imageeditor.controller.ImageEditorSaveImage
 import com.outsystems.rd.LocalCameraSampleApp.R
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Default
+import kotlin.math.floor
 
 
 class ImageEditorView @JvmOverloads constructor(
@@ -41,8 +41,6 @@ class ImageEditorView @JvmOverloads constructor(
 
   private val rotateButton by lazy { findViewById<ImageButton>(R.id.rotateButton) }
   private val flipButton by lazy { findViewById<ImageButton>(R.id.flipButton) }
-
-  private val editLayout by lazy { findViewById<ImageButton>(R.id.imageEditorView) }
 
   private var scaleGestureDetector: ScaleGestureDetector
   private var scaleGestureListener: ScaleListener
@@ -120,12 +118,12 @@ class ImageEditorView @JvmOverloads constructor(
         val cropViewRect = cropView.getFrame()
 
         val imageCropRect = Rect().apply {
-          left = cropViewRect.left.toInt() - imageView.left
-          top = cropViewRect.top.toInt() - imageView.top
+          left = cropViewRect.left.toInt()
+          top = cropViewRect.top.toInt()
           right = left + cropViewRect.width().toInt()
           bottom = top + cropViewRect.height().toInt()
         }
-        val scaledImageRect = Rect().apply { imageView.getHitRect(this) }
+        val scaledImageRect = cropView.getLimitFrame()
 
         Log.d(TAG, "${imageCropRect.left} ${imageCropRect.top} ${cropViewRect.width()} ${cropViewRect.height()}" )
 
@@ -133,7 +131,7 @@ class ImageEditorView @JvmOverloads constructor(
         /* We need to create this scaledImage because the ImageView will scale with the screen, but the image
         dimensions will be the same as original.
         */
-        val scaledImage = Bitmap.createScaledBitmap(sourceImage, scaledImageRect.width(), scaledImageRect.height(), false)
+        val scaledImage = Bitmap.createScaledBitmap(sourceImage, scaledImageRect.width().toInt(), scaledImageRect.height().toInt(), false)
         val newImage = imageEditorController.crop(scaledImage, imageCropRect)
 
 
@@ -166,13 +164,41 @@ class ImageEditorView @JvmOverloads constructor(
     imageView.requestLayout()
   }
 
-
+  /*
+    This method will find the image limits by using the ImageView and source Bitmap ratio.
+    In a nutshell:
+    1 - resize the image to the view Height, and then compute the proposedWidth;
+    2 - resize the image to the view Width, and then compute the proposedHeight;
+    3 - check which one of the proposed dimensions is small enough to fit on the view;
+    4 - use this proposed dimensions to compute the limit frame;
+   */
   private fun updateCropViewLimitFrame(){
+
     val newCropViewFrame = RectF(
       imageView.left.toFloat(),
       imageView.top.toFloat(),
       imageView.right.toFloat(),
       imageView.bottom.toFloat())
+
+    val sourceImage = (imageView.drawable as BitmapDrawable).bitmap
+    val sourceImageRatio = sourceImage.width.toFloat() / sourceImage.height.toFloat()
+
+    val imageViewWidth = imageView.width
+    val proposedHeight = imageViewWidth * (1 / sourceImageRatio)
+
+    val imageViewHeight = imageView.height
+    val proposedWidth = imageViewHeight * sourceImageRatio
+
+    if(proposedWidth > imageViewWidth) {
+      val newTopLimit = floor((imageViewHeight - proposedHeight) / 2)
+      newCropViewFrame.top = newTopLimit
+      newCropViewFrame.bottom = newTopLimit + proposedHeight
+    }
+    else {
+      val newLeftLimit = floor((imageViewWidth - proposedWidth) / 2)
+      newCropViewFrame.left =  newLeftLimit
+      newCropViewFrame.right = newLeftLimit + proposedWidth
+    }
 
     cropView.setLimitFrame(newCropViewFrame)
   }

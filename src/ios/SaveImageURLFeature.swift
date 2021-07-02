@@ -10,7 +10,7 @@ struct SaveImageURLFeature: ImageSaveFeature {
     let url: URL
     
     func saveImage(_ saveImage: UIImage, completion: @escaping (Result<Void, Error>) -> ()) {
-        guard let data = saveImage.fixedOrientation().pngData() else {
+        guard let data = saveImage.pngData() else {
             completion(.failure(SaveImageError.invalidImage))
             return
         }
@@ -24,7 +24,7 @@ struct SaveImageURLFeature: ImageSaveFeature {
     }
 }
 
-private extension UIImage {
+extension UIImage {
     func fixedOrientation() -> UIImage {
         if imageOrientation == .up { return self }
 

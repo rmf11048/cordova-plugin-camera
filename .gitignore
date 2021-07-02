@@ -12,4 +12,7 @@ Thumbs.db
 *.swp
 *.user
 
+.gradle
+.idea
+
 /node_modules/**

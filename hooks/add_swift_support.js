@@ -18,14 +18,14 @@
 var fs = require('fs');
 var path = require('path');
 var xcode = require('xcode');
-var platformMetadata = require('node_modules/cordova-lib/src/cordova/platform_metadata');
-var glob = require('node_modules/glob');
-var semver = require('node_modules/semver');
+var platformMetadata = require('cordova-lib/src/cordova/platform_metadata');
+var glob = require('glob');
+var semver = require('semver');
 var ConfigParser;
 if (semver.lt(context.opts.cordova.version, '5.4.0')) {
-  ConfigParser = require('node_modules/cordova-lib/src/ConfigParser/ConfigParser');
+  ConfigParser = require('cordova-lib/src/ConfigParser/ConfigParser');
 } else {
-  ConfigParser = require('node_modules/cordova-common/src/ConfigParser/ConfigParser');
+  ConfigParser = require('cordova-common/src/ConfigParser/ConfigParser');
 }
 
 var COMMENT_KEY = /_comment$/;

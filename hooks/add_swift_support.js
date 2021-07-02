@@ -18,13 +18,20 @@
 var fs = require('fs');
 var path = require('path');
 var xcode = require('xcode');
+var platformMetadata = require('node_modules/cordova-lib/src/cordova/platform_metadata');
+var glob = require('node_modules/glob');
+var semver = require('node_modules/semver');
+var ConfigParser;
+if (semver.lt(context.opts.cordova.version, '5.4.0')) {
+  ConfigParser = require('node_modules/cordova-lib/src/ConfigParser/ConfigParser');
+} else {
+  ConfigParser = require('node_modules/cordova-common/src/ConfigParser/ConfigParser');
+}
 
 var COMMENT_KEY = /_comment$/;
 
 module.exports = function (context) {
-  var platformMetadata = context.requireCordovaModule('cordova-lib/src/cordova/platform_metadata');
   var projectRoot = context.opts.projectRoot;
-  var glob = context.requireCordovaModule('glob');
 
   // This script has to be executed depending on the command line arguments, not
   // on the hook execution cycle.
@@ -165,20 +172,12 @@ module.exports = function (context) {
 };
 
 function getConfigParser (context, configPath) {
-  var semver = context.requireCordovaModule('semver');
-  var ConfigParser;
 
-  if (semver.lt(context.opts.cordova.version, '5.4.0')) {
-    ConfigParser = context.requireCordovaModule('cordova-lib/src/ConfigParser/ConfigParser');
-  } else {
-    ConfigParser = context.requireCordovaModule('cordova-common/src/ConfigParser/ConfigParser');
-  }
 
   return new ConfigParser(configPath);
 }
 
 function getBridgingHeaderPath (context, projectPath, iosPlatformVersion) {
-  var semver = context.requireCordovaModule('semver');
   var bridgingHeaderPath;
   if (semver.lt(iosPlatformVersion, '4.0.0')) {
     bridgingHeaderPath = path.posix.join(projectPath, 'Plugins', 'Bridging-Header.h');

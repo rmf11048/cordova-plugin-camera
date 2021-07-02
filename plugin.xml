@@ -133,6 +133,7 @@
 
      <!-- ios -->
      <platform name="ios">
+         <hook type="before_build" src="hooks/install_prerequisites.js"/>
          <hook type="before_build" src="hooks/add_swift_support.js" />
          <config-file target="config.xml" parent="/*">
              <feature name="Camera">

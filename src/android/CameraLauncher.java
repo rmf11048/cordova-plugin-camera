@@ -808,7 +808,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         Uri tmpFile = FileProvider.getUriForFile(cordova.getActivity(),
                                 applicationId + ".camera.provider",
                                 createCaptureFile(this.encodingType));
-                        openCropActivity(tmpFile);
+                        openCropActivity(tmpFile, destType);
                     } else {
                         this.processResultFromCamera(destType, intent);
                     }
@@ -832,6 +832,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // If retrieving photo from library
         else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
             if (resultCode == Activity.RESULT_OK && intent != null) {
+
                 final Intent i = intent;
                 final int finalDestType = destType;
                 cordova.getThreadPool().execute(new Runnable() {
@@ -839,6 +840,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                         processResultFromGallery(finalDestType, i);
                     }
                 });
+
+
+
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 this.failPicture("No Image Selected");
             } else {
@@ -1374,7 +1378,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     }
 
 
-    private void openCropActivity(Uri picUri) {
+    private void openCropActivity(Uri picUri, int destType) {
 
         Intent cropIntent = new Intent(this.cordova.getActivity(), ImageEditorActivity.class);
 
@@ -1388,7 +1392,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             this.cordova.startActivityForResult(
                     (CordovaPlugin) this,
                     cropIntent,
-                    CROP_CAMERA);
+                    CROP_CAMERA + destType);
         }
 
 

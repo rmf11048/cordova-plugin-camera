@@ -77,7 +77,7 @@
                   android:name="android.support.FILE_PROVIDER_PATHS"
                   android:resource="@xml/camera_provider_paths"/>
           </provider>
-          <activity android:name="com.outsystems.imageeditor.view.ImageEditorActivity" />
+          <activity android:name="com.outsystems.imageeditor.view.ImageEditorActivity" android:theme="@android:style/Theme.Black.NoTitleBar"/>
         </config-file>
 
         <source-file src="src/android/CameraLauncher.java" target-dir="src/org/apache/cordova/camera" />

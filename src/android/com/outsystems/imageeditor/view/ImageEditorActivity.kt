@@ -3,6 +3,7 @@ package com.outsystems.imageeditor.view
 import android.net.Uri
 import android.app.Activity
 import android.os.Bundle
+import android.view.WindowManager
 import com.outsystems.rd.LocalCameraSampleApp.R
 
 class ImageEditorActivity : Activity() {

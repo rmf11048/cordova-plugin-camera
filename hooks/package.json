@@ -1,6 +1,6 @@
 {
-  "dependencies": {
-      "cordova-lib": "10.0.0",
-      "cordova-common": "4.0.2"
-  }
+    "dependencies": {
+        "cordova-lib": "7.1",
+        "cordova-common": "4.0.2"
+    }
 }

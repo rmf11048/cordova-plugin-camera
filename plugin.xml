@@ -119,7 +119,7 @@
          <source-file src="src/ios/ScaledImageView.swift" />
          <source-file src="src/ios/TickLinesRectLayer.swift" />
          <source-file src="src/ios/UITraitCollection+Orientation.swift" />
-         <resource-file src="src/ios/BarcodeLocal.xcassets"/>
+         <resource-file src="src/ios/CameraLocal.xcassets"/>
          <dependency url="https://github.com/agoncalvesos/cordova-plugin-add-swift-support" id="cordova-plugin-add-swift-support"/>
          <framework src="ImageIO.framework" weak="true" />
          <framework src="CoreLocation.framework" />

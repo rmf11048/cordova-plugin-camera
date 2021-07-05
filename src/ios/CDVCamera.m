@@ -615,6 +615,7 @@ static NSString* toBase64(NSData* data) {
     if (cameraPicker.pictureOptions.allowsEditing && [mediaType isEqualToString:(NSString*)kUTTypeImage]) {
         self.imageInfo = info;
         UIImage* image = [info objectForKey:UIImagePickerControllerOriginalImage];
+        image = [image imageCorrectedForCaptureOrientation];
         CDVImageEditorInterface* editor = [[CDVImageEditorInterface alloc] init];
         UINavigationController* navVc = [[UINavigationController alloc] initWithRootViewController: [editor buildControllerWithImage:image delegate:self]];
         [[cameraPicker presentingViewController] dismissViewControllerAnimated:YES completion:nil];
@@ -862,7 +863,6 @@ static NSString* toBase64(NSData* data) {
     CDVCameraPicker* cameraPicker = [[CDVCameraPicker alloc] init];
     cameraPicker.pictureOptions = pictureOptions;
     cameraPicker.sourceType = pictureOptions.sourceType;
-    cameraPicker.allowsEditing = pictureOptions.allowsEditing;
 
     if (cameraPicker.sourceType == UIImagePickerControllerSourceTypeCamera) {
         // We only allow taking pictures (no video) in this API.

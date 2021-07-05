@@ -11,11 +11,12 @@ final class CropView: UIView {
         case DraggingTopRight
         case DraggingBottomLeft
         case DraggingBottomRight
+        case DraggingRect
         case notDragging
     }
     
     let gesture: UIPanGestureRecognizer
-    let minimumEdgesOffset: CGFloat = 30
+    let minimumEdgesOffset: CGFloat = 20
     let rectLayer = CropRectLayer()
     let rectOverLayer = CAShapeLayer()
     var state = State.notDragging
@@ -57,5 +58,10 @@ final class CropView: UIView {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let frame = self.bounds.insetBy(dx: -20, dy: -20);
+        return frame.contains(point) ? self : nil;
     }
 }

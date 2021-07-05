@@ -25,10 +25,11 @@ class TickLinesRectLayer: CALayer {
     }
     
     func updateLayers() {
-        let topLeftCorner = CGPoint(x: lineWidth / 2, y: lineWidth / 2)
-        let topRightCorner = CGPoint(x: bounds.width - lineWidth / 2, y: lineWidth / 2)
-        let bottomLeftCorner = CGPoint(x: lineWidth / 2, y: bounds.height - lineWidth / 2)
-        let bottomRightCorner = CGPoint(x: bounds.width - lineWidth / 2, y: bounds.height - lineWidth / 2)
+        let division: CGFloat = 3
+        let topLeftCorner = CGPoint(x: lineWidth / division, y: lineWidth / division)
+        let topRightCorner = CGPoint(x: bounds.width - lineWidth / division, y: lineWidth / division)
+        let bottomLeftCorner = CGPoint(x: lineWidth / division, y: bounds.height - lineWidth / division)
+        let bottomRightCorner = CGPoint(x: bounds.width - lineWidth / division, y: bounds.height - lineWidth / division)
         tickLines.forEach { $0.removeFromSuperlayer() }
         
         let tickCorners: [CAShapeLayer] = [
@@ -86,26 +87,26 @@ class TickLinesRectLayer: CALayer {
         let midY = bounds.height / 2
         let tickMiddles: [CAShapeLayer] = [
             .lineLayer(
-                fromPoint: CGPoint(x: midX - lineLenght / 2, y: lineWidth / 2),
-                toPoint: CGPoint(x: midX + lineLenght / 2, y: lineWidth / 2),
+                fromPoint: CGPoint(x: midX - lineLenght / 2, y: lineWidth / division),
+                toPoint: CGPoint(x: midX + lineLenght / 2, y: lineWidth / division),
                 color: UIColor.white.cgColor,
                 width: lineWidth
             ),
             .lineLayer(
-                fromPoint: CGPoint(x: midX - lineLenght / 2, y: bounds.height - lineWidth / 2),
-                toPoint: CGPoint(x: midX + lineLenght / 2, y: bounds.height - lineWidth / 2),
+                fromPoint: CGPoint(x: midX - lineLenght / 2, y: bounds.height - lineWidth / division),
+                toPoint: CGPoint(x: midX + lineLenght / 2, y: bounds.height - lineWidth / division),
                 color: UIColor.white.cgColor,
                 width: lineWidth
             ),
             .lineLayer(
-                fromPoint: CGPoint(x: lineWidth / 2, y: midY - lineLenght / 2),
-                toPoint: CGPoint(x: lineWidth / 2, y: midY + lineLenght / 2),
+                fromPoint: CGPoint(x: lineWidth / division, y: midY - lineLenght / 2),
+                toPoint: CGPoint(x: lineWidth / division, y: midY + lineLenght / 2),
                 color: UIColor.white.cgColor,
                 width: lineWidth
             ),
             .lineLayer(
-                fromPoint: CGPoint(x: bounds.width - lineWidth / 2, y: midY - lineLenght / 2),
-                toPoint: CGPoint(x: bounds.width - lineWidth / 2, y: midY + lineLenght / 2),
+                fromPoint: CGPoint(x: bounds.width - lineWidth / division, y: midY - lineLenght / 2),
+                toPoint: CGPoint(x: bounds.width - lineWidth / division, y: midY + lineLenght / 2),
                 color: UIColor.white.cgColor,
                 width: lineWidth
             ),

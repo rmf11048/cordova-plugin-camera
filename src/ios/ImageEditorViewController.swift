@@ -116,10 +116,10 @@ final class ImageEditorViewController: UIViewController {
         gesturesView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(gesturesView)
         NSLayoutConstraint.activate([
-            gesturesView.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor),
-            gesturesView.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor),
-            gesturesView.leftAnchor.constraint(equalTo: view.layoutMarginsGuide.leftAnchor),
-            gesturesView.rightAnchor.constraint(equalTo: view.layoutMarginsGuide.rightAnchor)
+            gesturesView.topAnchor.constraint(equalTo: view.topAnchor),
+            gesturesView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            gesturesView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            gesturesView.rightAnchor.constraint(equalTo: view.rightAnchor)
         ])
         
         gesturesView.addGestureRecognizer(scaleGesture)
@@ -134,14 +134,14 @@ final class ImageEditorViewController: UIViewController {
         imageView.setContentHuggingPriority(.required, for: .vertical)
         gesturesView.addSubview(imageView)
         portraitConstraints += [
-            imageView.leftAnchor.constraint(greaterThanOrEqualTo: gesturesView.leftAnchor),
-            imageView.rightAnchor.constraint(greaterThanOrEqualTo: gesturesView.rightAnchor),
+            imageView.leftAnchor.constraint(greaterThanOrEqualTo: gesturesView.layoutMarginsGuide.leftAnchor),
+            imageView.rightAnchor.constraint(greaterThanOrEqualTo: gesturesView.layoutMarginsGuide.rightAnchor),
             imageView.centerYAnchor.constraint(equalTo: gesturesView.centerYAnchor),
             imageView.centerXAnchor.constraint(equalTo: gesturesView.centerXAnchor)
         ]
         landscapeConstraints += [
-            imageView.topAnchor.constraint(greaterThanOrEqualTo: gesturesView.topAnchor),
-            imageView.bottomAnchor.constraint(greaterThanOrEqualTo: gesturesView.bottomAnchor),
+            imageView.topAnchor.constraint(greaterThanOrEqualTo: gesturesView.layoutMarginsGuide.topAnchor),
+            imageView.bottomAnchor.constraint(greaterThanOrEqualTo: gesturesView.layoutMarginsGuide.bottomAnchor),
             imageView.centerYAnchor.constraint(equalTo: gesturesView.centerYAnchor),
             imageView.centerXAnchor.constraint(equalTo: gesturesView.centerXAnchor)
         ]

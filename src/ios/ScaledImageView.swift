@@ -12,6 +12,7 @@ class ScaledImageView: UIImageView {
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
+        guard UIApplication.shared.applicationState != .background else { return }
         switch traitCollection.orientation {
         case .portrait:
             sizeConstraint.map {

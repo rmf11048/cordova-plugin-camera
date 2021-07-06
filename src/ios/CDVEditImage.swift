@@ -32,7 +32,8 @@ class CDVEditImage: CDVPlugin {
         }
         callbackId = command.callbackId
         
-        self.viewController.present(vc, animated: true, completion: nil)
+        let navVC = UINavigationController(rootViewController: vc)
+        self.viewController.present(navVC, animated: true, completion: nil)
     }
 }
 

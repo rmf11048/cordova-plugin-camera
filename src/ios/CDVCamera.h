@@ -21,6 +21,7 @@
 #import <CoreLocation/CoreLocation.h>
 #import <CoreLocation/CLLocationManager.h>
 #import <Cordova/CDVPlugin.h>
+#import "OutSystems-Swift.h"
 
 enum CDVDestinationType {
     DestinationTypeDataUrl = 0,
@@ -83,13 +84,15 @@ typedef NSUInteger CDVMediaType;
 @interface CDVCamera : CDVPlugin <UIImagePickerControllerDelegate,
                        UINavigationControllerDelegate,
                        UIPopoverControllerDelegate,
-                       CLLocationManagerDelegate>
+                       CLLocationManagerDelegate,
+                       CDVImageEditorDelegate>
 {}
 
 @property (strong) CDVCameraPicker* pickerController;
 @property (strong) NSMutableDictionary *metadata;
 @property (strong, nonatomic) CLLocationManager *locationManager;
 @property (strong) NSData* data;
+@property (strong) NSDictionary* imageInfo;
 
 /*
  * getPicture

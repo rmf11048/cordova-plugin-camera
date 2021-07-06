@@ -30,6 +30,7 @@
 #import <MobileCoreServices/UTCoreTypes.h>
 #import <objc/message.h>
 #import <Photos/Photos.h>
+#import "OutSystems-Swift.h"
 
 #ifndef __CORDOVA_4_0_0
     #import <Cordova/NSData+Base64.h>
@@ -466,7 +467,7 @@ static NSString* toBase64(NSData* data) {
 - (UIImage*)retrieveImage:(NSDictionary*)info options:(CDVPictureOptions*)options
 {
     // get the image
-    UIImage* image = nil;
+    UIImage* image = [info objectForKey:UIImagePickerControllerOriginalImage];
     if (options.allowsEditing && [info objectForKey:UIImagePickerControllerEditedImage]) {
         image = [info objectForKey:UIImagePickerControllerEditedImage];
     } else {
@@ -610,8 +611,16 @@ static NSString* toBase64(NSData* data) {
             weakSelf.pickerController = nil;
         }
     };
-
-    if (cameraPicker.pictureOptions.popoverSupported && (cameraPicker.pickerPopoverController != nil)) {
+    NSString* mediaType = [info objectForKey:UIImagePickerControllerMediaType];
+    if (cameraPicker.pictureOptions.allowsEditing && [mediaType isEqualToString:(NSString*)kUTTypeImage]) {
+        self.imageInfo = info;
+        UIImage* image = [info objectForKey:UIImagePickerControllerOriginalImage];
+        CDVImageEditorInterface* editor = [[CDVImageEditorInterface alloc] init];
+        UINavigationController* navVc = [[UINavigationController alloc] initWithRootViewController: [editor buildControllerWithImage:image delegate:self]];
+        [[cameraPicker presentingViewController] dismissViewControllerAnimated:YES completion:nil];
+        [self.viewController presentViewController:navVc animated:YES completion:nil];
+    }
+    else if (cameraPicker.pictureOptions.popoverSupported && (cameraPicker.pickerPopoverController != nil)) {
         [cameraPicker.pickerPopoverController dismissPopoverAnimated:YES];
         cameraPicker.pickerPopoverController.delegate = nil;
         cameraPicker.pickerPopoverController = nil;
@@ -619,6 +628,36 @@ static NSString* toBase64(NSData* data) {
     } else {
         [[cameraPicker presentingViewController] dismissViewControllerAnimated:YES completion:invoke];
     }
+}
+
+- (void)finishEditing:(UIImage *)result error:(NSError *)error {
+    __weak CDVCameraPicker* cameraPicker = self.pickerController;
+    __weak CDVCamera* weakSelf = self;
+    
+    NSMutableDictionary* dic = [self.imageInfo mutableCopy];
+    [dic setValue:result forKey:UIImagePickerControllerEditedImage];
+    [self resultForImage:cameraPicker.pictureOptions info:dic completion:^(CDVPluginResult* res) {
+        if (![self usesGeolocation] || cameraPicker.sourceType != UIImagePickerControllerSourceTypeCamera) {
+            [weakSelf.commandDelegate sendPluginResult:res callbackId:cameraPicker.callbackId];
+            weakSelf.hasPendingOperation = NO;
+            weakSelf.pickerController = nil;
+        }
+    }];
+}
+
+- (void)didCancelEdit {
+    __weak CDVCameraPicker* cameraPicker = self.pickerController;
+    __weak CDVCamera* weakSelf = self;
+
+    dispatch_block_t invoke = ^ (void) {
+        CDVPluginResult* result;
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_NO_RESULT messageAsString:@"Canceled edit"];
+        [weakSelf.commandDelegate sendPluginResult:result callbackId:cameraPicker.callbackId];
+        weakSelf.hasPendingOperation = NO;
+        weakSelf.pickerController = nil;
+    };
+
+    [[self.viewController presentingViewController] dismissViewControllerAnimated:YES completion:invoke];
 }
 
 // older api calls newer didFinishPickingMediaWithInfo
@@ -823,7 +862,6 @@ static NSString* toBase64(NSData* data) {
     CDVCameraPicker* cameraPicker = [[CDVCameraPicker alloc] init];
     cameraPicker.pictureOptions = pictureOptions;
     cameraPicker.sourceType = pictureOptions.sourceType;
-    cameraPicker.allowsEditing = pictureOptions.allowsEditing;
 
     if (cameraPicker.sourceType == UIImagePickerControllerSourceTypeCamera) {
         // We only allow taking pictures (no video) in this API.

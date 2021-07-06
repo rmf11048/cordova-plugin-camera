@@ -187,7 +187,8 @@ cameraExport.cleanup = function (successCallback, errorCallback) {
  */
  cameraExport.editPicture = function (successCallback, errorCallback, options) {
 
-    argscheck.checkArgs('fFO', 'Camera.editPicture', arguments);
+    argscheck.checkArgs('fFO', 'EditImage.edit', arguments);
+
     options = options || {};
     var getValue = argscheck.getValue;
 
@@ -198,7 +199,8 @@ cameraExport.cleanup = function (successCallback, errorCallback) {
     }
 
     var args = [imageByteArray];
-    exec(successCallback, errorCallback, 'Camera', 'editPicture', args);
+
+    exec(successCallback, errorCallback, 'EditImage', 'edit', args);
 };
 
 module.exports = cameraExport;

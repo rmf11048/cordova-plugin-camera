@@ -52,8 +52,13 @@
         <hook type="after_plugin_install" src="hooks/AndroidManifestPatcher.js" />
 
         <config-file target="res/xml/config.xml" parent="/*">
+
             <feature name="Camera">
                 <param name="android-package" value="org.apache.cordova.camera.CameraLauncher"/>
+            </feature>
+
+            <feature name="EditImage">
+                <param name="android-package" value="org.apache.cordova.camera.EditImage"/>
             </feature>
 
             <preference name="GradlePluginKotlinEnabled" value="true" />
@@ -81,6 +86,7 @@
         </config-file>
 
         <source-file src="src/android/CameraLauncher.java" target-dir="src/org/apache/cordova/camera" />
+        <source-file src="src/android/EditImage.java" target-dir="src/org/apache/cordova/camera" />
         <source-file src="src/android/FileHelper.java" target-dir="src/org/apache/cordova/camera" />
         <source-file src="src/android/ExifHelper.java" target-dir="src/org/apache/cordova/camera" />
         <source-file src="src/android/FileProvider.java" target-dir="src/org/apache/cordova/camera" />
@@ -181,7 +187,9 @@
 
      </platform>
 
-    <!-- browser -->
+    
+   
+   <!-- browser -->
     <platform name="browser">
         <config-file target="config.xml" parent="/*">
             <feature name="Camera">

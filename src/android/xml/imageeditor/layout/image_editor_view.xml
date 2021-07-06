@@ -37,6 +37,8 @@
             android:id="@+id/operationsToolBar"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             app:layout_constraintBottom_toTopOf="@+id/bottomToolbar"
@@ -78,6 +80,8 @@
     </LinearLayout>
 
     <LinearLayout
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:id="@+id/bottomToolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -88,7 +92,7 @@
             app:layout_constraintStart_toStartOf="parent">
 
         <Button
-                android:text="Cancel"
+                android:text="CANCEL"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"

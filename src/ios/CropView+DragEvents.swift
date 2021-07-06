@@ -6,8 +6,17 @@ extension CropView {
         switch (gesture.state, state) {
         case (.began, .notDragging):
             let point = gesture.location(in: self)
-            let isCornerPanning = isPanningACorner(point)
-            state = isCornerPanning != .notDragging ? isCornerPanning : isPanningASide(point)
+            
+            state = isPanningACorner(point)
+            if state == .notDragging {
+                let panningSide = isPanningASide(point)
+                state = panningSide
+                
+                if panningSide == .notDragging {
+                    state = isPanningRect(point)
+                }
+            }
+            
             if state != .notDragging { lastCropRect = cropRect }
         case (.changed, .DraggingTop):
             dragTop(gesture)
@@ -25,6 +34,8 @@ extension CropView {
             dragCornerBottomLeft(gesture)
         case (.changed, .DraggingBottomRight):
             dragCornerBottomRight(gesture)
+        case (.changed, .DraggingRect):
+            dragRect(gesture)
         case (.ended, _):
             state = .notDragging
         default:
@@ -35,53 +46,90 @@ extension CropView {
     @objc private func dragTop(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: self)
         let newRect = lastCropRect.inset(by: .init(top: translation.y, left: 0, bottom: 0, right: 0))
-        cropRect = isNewRectValid(newRect) ? newRect : cropRect
+        cropRect = isNewRectValid(newRect)
     }
     
     @objc private func dragBottom(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: self)
         let newRect = lastCropRect.inset(by: .init(top: 0, left: 0, bottom: -translation.y, right: 0))
-        cropRect = isNewRectValid(newRect) ? newRect : cropRect
+        cropRect = isNewRectValid(newRect)
     }
     
     @objc private func dragLeft(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: self)
         let newRect = lastCropRect.inset(by: .init(top: 0, left: translation.x, bottom: 0, right: 0))
-        cropRect = isNewRectValid(newRect) ? newRect : cropRect
+        cropRect = isNewRectValid(newRect)
     }
     
     @objc private func dragRight(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: self)
         let newRect = lastCropRect.inset(by: .init(top: 0, left: 0, bottom: 0, right: -translation.x))
-        cropRect = isNewRectValid(newRect) ? newRect : cropRect
+        cropRect = isNewRectValid(newRect)
     }
     
     @objc private func dragCornerTopRight(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: self)
         let newRect = lastCropRect.inset(by: .init(top: translation.y, left: 0, bottom: 0, right: -translation.x))
-        cropRect = isNewRectValid(newRect) ? newRect : cropRect
+        cropRect = isNewRectValid(newRect)
     }
     
     @objc private func dragCornerTopLeft(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: self)
         let newRect = lastCropRect.inset(by: .init(top: translation.y, left: translation.x, bottom: 0, right: 0))
-        cropRect = isNewRectValid(newRect) ? newRect : cropRect
+        cropRect = isNewRectValid(newRect)
     }
     
     @objc private func dragCornerBottomRight(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: self)
         let newRect = lastCropRect.inset(by: .init(top: 0, left: 0, bottom: -translation.y, right: -translation.x))
-        cropRect = isNewRectValid(newRect) ? newRect : cropRect
+        cropRect = isNewRectValid(newRect)
     }
     
     @objc private func dragCornerBottomLeft(_ gesture: UIPanGestureRecognizer) {
         let translation = gesture.translation(in: self)
         let newRect = lastCropRect.inset(by: .init(top: 0, left: translation.x, bottom: -translation.y, right: 0))
-        cropRect = isNewRectValid(newRect) ? newRect : cropRect
+        cropRect = isNewRectValid(newRect)
     }
     
-    private func isNewRectValid(_ rect: CGRect) -> Bool {
-        self.bounds.contains(rect) && rect.height > 70 && rect.width > 63
+    @objc private func dragRect(_ gesture: UIPanGestureRecognizer) {
+        let translation = gesture.translation(in: self)
+        let newRect = lastCropRect.applying(.init(translationX: translation.x, y: translation.y))
+        cropRect = isDraggingRectValid(newRect)
+    }
+    
+    private func isNewRectValid(_ rect: CGRect) -> CGRect {
+        let minWidth: CGFloat = 63
+        let minHeight: CGFloat = 70
+        let minX: CGFloat = 0
+        let minY: CGFloat = 0
+        let maxX: CGFloat = self.bounds.width - minWidth
+        let maxY: CGFloat = self.bounds.height - minHeight
+        let x = max(minX, min(rect.origin.x, maxX))
+        let y = max(minY, min(rect.origin.y, maxY))
+        let maxWidth = self.bounds.width - x
+        let maxHeight = self.bounds.height - y
+        
+        let r = CGRect(
+            x: x,
+            y: y,
+            width: max(minWidth, min(rect.width, maxWidth)),
+            height: max(minHeight, min(rect.height, maxHeight))
+        )
+        return r
+    }
+    
+    private func isDraggingRectValid(_ rect: CGRect) -> CGRect {
+        let minX: CGFloat = 0
+        let minY: CGFloat = 0
+        let maxX: CGFloat = self.bounds.width - cropRect.width
+        let maxY: CGFloat = self.bounds.height - cropRect.height
+
+        return CGRect(
+            x: max(minX, min(rect.origin.x, maxX)),
+            y: max(minY, min(rect.origin.y, maxY)),
+            width: cropRect.width,
+            height: cropRect.height
+        )
     }
     
     private func isPanningASide(_ point: CGPoint) -> State {
@@ -134,31 +182,31 @@ extension CropView {
     
     private func isPanningACorner(_ point: CGPoint) -> State {
         let cornerTopLeftRect = CGRect(
-            x: cropRect.origin.x,
-            y: cropRect.origin.y,
+            x: cropRect.origin.x - minimumEdgesOffset,
+            y: cropRect.origin.y - minimumEdgesOffset,
             width: minimumEdgesOffset * 2,
             height: minimumEdgesOffset * 2
         )
         
         let cornerTopRightRect = CGRect(
             x: cropRect.origin.x + cropRect.width - minimumEdgesOffset,
-            y: cropRect.origin.y,
-            width: minimumEdgesOffset,
-            height: minimumEdgesOffset
+            y: cropRect.origin.y - minimumEdgesOffset,
+            width: minimumEdgesOffset * 2,
+            height: minimumEdgesOffset * 2
         )
         
         let cornerBottomLeftRect = CGRect(
-            x: cropRect.origin.x,
+            x: cropRect.origin.x - minimumEdgesOffset,
             y: cropRect.origin.y + cropRect.height - minimumEdgesOffset,
-            width: minimumEdgesOffset,
-            height: minimumEdgesOffset
+            width: minimumEdgesOffset * 2,
+            height: minimumEdgesOffset * 2
         )
         
         let cornerBottomRightRect = CGRect(
             x: cropRect.origin.x + cropRect.width - minimumEdgesOffset,
             y: cropRect.origin.y + cropRect.height - minimumEdgesOffset,
-            width: minimumEdgesOffset,
-            height: minimumEdgesOffset
+            width: minimumEdgesOffset * 2,
+            height: minimumEdgesOffset * 2
         )
         
         if cornerTopLeftRect.contains(point) {
@@ -178,5 +226,9 @@ extension CropView {
         }
         
         return .notDragging
+    }
+    
+    private func isPanningRect(_ point: CGPoint) -> State {
+        cropRect.contains(point) ? .DraggingRect : .notDragging
     }
 }

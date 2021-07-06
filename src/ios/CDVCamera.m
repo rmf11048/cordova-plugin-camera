@@ -615,7 +615,6 @@ static NSString* toBase64(NSData* data) {
     if (cameraPicker.pictureOptions.allowsEditing && [mediaType isEqualToString:(NSString*)kUTTypeImage]) {
         self.imageInfo = info;
         UIImage* image = [info objectForKey:UIImagePickerControllerOriginalImage];
-        image = [image imageCorrectedForCaptureOrientation];
         CDVImageEditorInterface* editor = [[CDVImageEditorInterface alloc] init];
         UINavigationController* navVc = [[UINavigationController alloc] initWithRootViewController: [editor buildControllerWithImage:image delegate:self]];
         [[cameraPicker presentingViewController] dismissViewControllerAnimated:YES completion:nil];

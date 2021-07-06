@@ -21,7 +21,7 @@ class ScaledImageView: UIImageView {
             }
             sizeConstraint = nil
             sizeConstraint = heightAnchor.constraint(equalToConstant: scaledDimension())
-            sizeConstraint?.priority = .defaultHigh
+            sizeConstraint?.priority = .required
             sizeConstraint?.isActive = true
             break
         case .landscape:
@@ -31,7 +31,7 @@ class ScaledImageView: UIImageView {
             }
             sizeConstraint = nil
             sizeConstraint = widthAnchor.constraint(equalToConstant: scaledDimension())
-            sizeConstraint?.priority = .defaultHigh
+            sizeConstraint?.priority = .required
             sizeConstraint?.isActive = true
             break
         }

@@ -26,6 +26,7 @@ final class ImageEditorViewController: UIViewController {
     private var actualTranslation: CGPoint = .zero
     private var portraitConstraints = [NSLayoutConstraint]()
     private var landscapeConstraints = [NSLayoutConstraint]()
+    private var landscapeImageViewCenterXConstraint: NSLayoutConstraint?
     private lazy var cropView = CropView(gesture: rectPanGesture)
     
     private var doneButton: UIBarButtonItem {
@@ -85,10 +86,12 @@ final class ImageEditorViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
-        setupGesturesView()
+        view.addSubview(gesturesView)
         view.addSubview(buttonsMainStack)
+        setupGesturesView()
+        buttonsMainStack.setContentHuggingPriority(.required, for: .vertical)
         portraitConstraints += [
-            buttonsMainStack.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor),
+            view.layoutMarginsGuide.bottomAnchor.constraint(equalTo: buttonsMainStack.bottomAnchor, constant: 16),
             buttonsMainStack.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ]
         landscapeConstraints += [
@@ -96,6 +99,17 @@ final class ImageEditorViewController: UIViewController {
             buttonsMainStack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ]
         setupPortraitUI()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard
+            traitCollection.orientation == .landscape,
+            let constraint = landscapeImageViewCenterXConstraint,
+            constraint.constant != buttonsMainStack.bounds.width + gesturesView.layoutMargins.right
+        else { return }
+        // Adjust center of Image view
+        constraint.constant = buttonsMainStack.bounds.width + gesturesView.layoutMargins.right + 8
     }
     
     private func setupToolbar() {
@@ -114,13 +128,18 @@ final class ImageEditorViewController: UIViewController {
     
     private func setupGesturesView() {
         gesturesView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(gesturesView)
-        NSLayoutConstraint.activate([
+        portraitConstraints += [
             gesturesView.topAnchor.constraint(equalTo: view.topAnchor),
-            gesturesView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            gesturesView.bottomAnchor.constraint(equalTo: buttonsMainStack.topAnchor),
             gesturesView.leftAnchor.constraint(equalTo: view.leftAnchor),
             gesturesView.rightAnchor.constraint(equalTo: view.rightAnchor)
-        ])
+        ]
+        landscapeConstraints += [
+            gesturesView.topAnchor.constraint(equalTo: view.topAnchor),
+            view.bottomAnchor.constraint(equalTo: gesturesView.bottomAnchor, constant: 40),
+            gesturesView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            gesturesView.rightAnchor.constraint(equalTo: buttonsMainStack.leftAnchor)
+        ]
         
         gesturesView.addGestureRecognizer(scaleGesture)
         gesturesView.addGestureRecognizer(rectPanGesture)
@@ -134,17 +153,21 @@ final class ImageEditorViewController: UIViewController {
         imageView.setContentHuggingPriority(.required, for: .vertical)
         gesturesView.addSubview(imageView)
         portraitConstraints += [
-            imageView.leftAnchor.constraint(greaterThanOrEqualTo: gesturesView.layoutMarginsGuide.leftAnchor),
-            imageView.rightAnchor.constraint(greaterThanOrEqualTo: gesturesView.layoutMarginsGuide.rightAnchor),
+            imageView.leftAnchor.constraint(equalTo: gesturesView.layoutMarginsGuide.leftAnchor, constant: 16),
+            imageView.rightAnchor.constraint(equalTo: gesturesView.layoutMarginsGuide.rightAnchor, constant: -16),
             imageView.centerYAnchor.constraint(equalTo: gesturesView.centerYAnchor),
-            imageView.centerXAnchor.constraint(equalTo: gesturesView.centerXAnchor)
+            imageView.centerXAnchor.constraint(equalTo: gesturesView.centerXAnchor),
+            imageView.bottomAnchor.constraint(lessThanOrEqualTo: gesturesView.layoutMarginsGuide.bottomAnchor),
         ]
         landscapeConstraints += [
-            imageView.topAnchor.constraint(greaterThanOrEqualTo: gesturesView.layoutMarginsGuide.topAnchor),
-            imageView.bottomAnchor.constraint(greaterThanOrEqualTo: gesturesView.layoutMarginsGuide.bottomAnchor),
+            imageView.topAnchor.constraint(equalTo: gesturesView.layoutMarginsGuide.topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: gesturesView.layoutMarginsGuide.bottomAnchor),
             imageView.centerYAnchor.constraint(equalTo: gesturesView.centerYAnchor),
-            imageView.centerXAnchor.constraint(equalTo: gesturesView.centerXAnchor)
+            imageView.rightAnchor.constraint(lessThanOrEqualTo: gesturesView.layoutMarginsGuide.rightAnchor),
         ]
+        
+        landscapeImageViewCenterXConstraint = imageView.centerXAnchor.constraint(equalTo: gesturesView.centerXAnchor)
+        landscapeImageViewCenterXConstraint.map { landscapeConstraints.append($0) }
         imageView.contentMode = .scaleAspectFit
         imageView.isUserInteractionEnabled = true
     }
@@ -215,19 +238,11 @@ extension ImageEditorViewController {
     
     @objc func saveImage(_ sender: Any?) {
         let croppedImage: UIImage?
-        if imageView.image!.size.width > imageView.image!.size.height {
-            let viewWidth = imageView.bounds.width
-            let imageWidth = imageView.image!.cgImage!.width
-            let scaled = CGFloat(imageWidth) / viewWidth
-            let scaledRect = cropView.cropRect.applying(CGAffineTransform(scaleX: scaled, y: scaled))
-            croppedImage = try? controller.cropImage(imageView.image!, rect: scaledRect)
-        } else {
-            let viewWidth = imageView.bounds.height
-            let imageWidth = imageView.image!.cgImage!.width
-            let scaled = CGFloat(imageWidth) / viewWidth
-            let scaledRect = cropView.cropRect.applying(CGAffineTransform(scaleX: scaled, y: scaled))
-            croppedImage = try? controller.cropImage(imageView.image!, rect: scaledRect)
-        }
+        guard let cgImage = imageView.image?.cgImage else { return }
+        let scaledWidth =  CGFloat(cgImage.width) / imageView.bounds.width
+        let scaledHeight = CGFloat(cgImage.height) / imageView.bounds.height
+        let scaledRect = cropView.cropRect.applying(CGAffineTransform(scaleX: scaledWidth, y: scaledHeight))
+        croppedImage = try? controller.cropImage(imageView.image!, rect: scaledRect)
         
         controller.saveImage(croppedImage!) { [weak self] _ in
             DispatchQueue.main.async {

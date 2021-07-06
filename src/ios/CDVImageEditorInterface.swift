@@ -12,7 +12,8 @@ import UIKit
             saveImageFeature: PassthroughImageSaverImpl(),
             delegate: DelegationBinder(delegate: delegate)
         )
-        return ImageEditorViewController(image: image, controller: controller)
+
+        return ImageEditorViewController(image: image?.fixedOrientation(), controller: controller)
     }
 }
 

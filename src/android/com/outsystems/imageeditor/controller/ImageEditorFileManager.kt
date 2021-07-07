@@ -25,13 +25,6 @@ class ImageEditorFileManager : ImageEditorSaveImage {
         fOut.flush()
         fOut.close() // do not forget to close the stream
 
-        MediaStore.Images.Media.insertImage(
-            context.contentResolver,
-            file.absolutePath,
-            file.name,
-            file.name
-        )
-
     }
 
     private fun showImageInGallery(context: Context, uri : Uri){

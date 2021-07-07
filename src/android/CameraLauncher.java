@@ -38,9 +38,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.provider.MediaStore;
 import androidx.core.content.FileProvider;
 import android.util.Base64;
+import android.widget.Toast;
 
 import com.outsystems.imageeditor.view.ImageEditorActivity;
 
@@ -60,6 +62,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -107,6 +112,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
     //Where did this come from?
     private static final int CROP_CAMERA = 100;
+    private static final int CROP_GALERY = 666;
 
     private static final String TIME_FORMAT = "yyyyMMdd_HHmmss";
 
@@ -226,6 +232,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             return true;
         }
+
         return false;
     }
 
@@ -419,61 +426,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         }
     }
 
-
-    /**
-    * Brings up the UI to perform crop on passed image URI
-    *
-    * @param picUri
-    */
-    private void performCrop(Uri picUri, int destType, Intent cameraIntent) {
-        try {
-
-            Intent cropIntent = new Intent("com.android.camera.action.CROP");
-
-            // indicate image type and Uri
-            cropIntent.setDataAndType(picUri, "image/*");
-
-            // set crop properties
-            cropIntent.putExtra("crop", "true");
-
-
-            // indicate output X and Y
-            if (targetWidth > 0) {
-              cropIntent.putExtra("outputX", targetWidth);
-            }
-            if (targetHeight > 0) {
-              cropIntent.putExtra("outputY", targetHeight);
-            }
-            if (targetHeight > 0 && targetWidth > 0 && targetWidth == targetHeight) {
-              cropIntent.putExtra("aspectX", 1);
-              cropIntent.putExtra("aspectY", 1);
-            }
-
-            // create new file handle to get full resolution crop
-            croppedFilePath = createCaptureFile(this.encodingType, System.currentTimeMillis() + "").getAbsolutePath();
-            croppedUri = Uri.parse(croppedFilePath);
-            cropIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            cropIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            cropIntent.putExtra("output", croppedUri);
-
-
-            // start the activity - we handle returning in onActivityResult
-            if (this.cordova != null) {
-                this.cordova.startActivityForResult((CordovaPlugin) this,
-                    cropIntent, CROP_CAMERA + destType);
-            }
-        } catch (ActivityNotFoundException anfe) {
-          LOG.e(LOG_TAG, "Crop operation not supported on this device");
-          try {
-              processResultFromCamera(destType, cameraIntent);
-          }
-          catch (IOException e)
-          {
-              e.printStackTrace();
-              LOG.e(LOG_TAG, "Unable to write to file");
-          }
-        }
-    }
 
     /**
      * Applies all needed transformation to the image received from the camera.
@@ -829,8 +781,28 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         int srcType = (requestCode / 16) - 1;
         int destType = (requestCode % 16) - 1;
 
-        // If Camera Crop
-        if (requestCode >= CROP_CAMERA) {
+        if(requestCode == CROP_GALERY) {
+            if (resultCode == Activity.RESULT_OK) {
+
+                Bitmap result = BitmapFactory.decodeFile(croppedFilePath);
+
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                if(result.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream)){
+                    byte[] byteArray = byteArrayOutputStream.toByteArray();
+                    String base64Result = Base64.encodeToString(byteArray, Base64.NO_WRAP);
+                    this.callbackContext.success(base64Result);
+                }
+
+            }
+            else if (resultCode == Activity.RESULT_CANCELED) {
+                this.failPicture("No Image Selected");
+            }
+            else {
+                this.failPicture("Did not complete!");
+            }
+        }
+
+        else if (requestCode >= CROP_CAMERA) {
             if (resultCode == Activity.RESULT_OK) {
 
                 // Because of the inability to pass through multiple intents, this hack will allow us
@@ -859,15 +831,18 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             // If image available
             if (resultCode == Activity.RESULT_OK) {
                 try {
+
                     if (this.allowEdit) {
+
                         Uri tmpFile = FileProvider.getUriForFile(cordova.getActivity(),
                                 applicationId + ".camera.provider",
                                 createCaptureFile(this.encodingType));
-                        openCropActivity(tmpFile, destType, intent);
-                        //performCrop(tmpFile, destType, intent);
+                        openCropActivity(tmpFile, CROP_CAMERA, destType);
+
                     } else {
                         this.processResultFromCamera(destType, intent);
                     }
+
                 } catch (IOException e) {
                     e.printStackTrace();
                     this.failPicture("Error capturing image.");
@@ -888,14 +863,24 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         // If retrieving photo from library
         else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
             if (resultCode == Activity.RESULT_OK && intent != null) {
+
                 final Intent i = intent;
                 final int finalDestType = destType;
-                cordova.getThreadPool().execute(new Runnable() {
-                    public void run() {
-                        processResultFromGallery(finalDestType, i);
-                    }
-                });
-            } else if (resultCode == Activity.RESULT_CANCELED) {
+
+                if (this.allowEdit) {
+                    Uri uri = intent.getData();
+                    openCropActivity(uri, CROP_GALERY, destType);
+
+                } else {
+
+                    cordova.getThreadPool().execute(() ->
+                            processResultFromGallery(finalDestType, i)
+                    );
+
+                }
+
+            }
+            else if (resultCode == Activity.RESULT_CANCELED) {
                 this.failPicture("No Image Selected");
             } else {
                 this.failPicture("Selection did not complete!");
@@ -1430,37 +1415,28 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     }
 
 
-    private void openCropActivity(Uri picUri, int destType, Intent cameraIntent) {
+    private void openCropActivity(Uri picUri, int requestCode, int destType) {
 
-        try {
+        Intent cropIntent = new Intent(this.cordova.getActivity(), ImageEditorActivity.class);
 
-            Intent cropIntent = new Intent(this.cordova.getActivity(), ImageEditorActivity.class);
+        // create output file
+        croppedFilePath = createCaptureFile(JPEG, System.currentTimeMillis() + "").getAbsolutePath();
+        croppedUri = Uri.parse(croppedFilePath);
 
-            croppedFilePath = createCaptureFile(this.encodingType, System.currentTimeMillis() + "").getAbsolutePath();
-            croppedUri = Uri.parse(croppedFilePath);
+        cropIntent.putExtra(ImageEditorActivity.IMAGE_OUTPUT_URI_EXTRAS, croppedFilePath);
+        cropIntent.putExtra(ImageEditorActivity.IMAGE_INPUT_URI_EXTRAS, picUri.toString());
 
-            cropIntent.putExtra(ImageEditorActivity.IMAGE_OUTPUT_URI_EXTRAS, croppedFilePath);
-            cropIntent.putExtra(ImageEditorActivity.IMAGE_INPUT_URI_EXTRAS, picUri.toString());
-
-            if (this.cordova != null) {
-                this.cordova.startActivityForResult(
-                        (CordovaPlugin) this,
-                        cropIntent,
-                        CROP_CAMERA + destType);
-            }
-        } catch (ActivityNotFoundException anfe) {
-            LOG.e(LOG_TAG, "Crop operation not supported on this device");
-            try {
-                processResultFromCamera(destType, cameraIntent);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-                LOG.e(LOG_TAG, "Unable to write to file");
-            }
+        if (this.cordova != null) {
+            this.cordova.startActivityForResult(
+                    this,
+                    cropIntent,
+                    requestCode + destType);
         }
 
 
     }
+
+
+
 
 }

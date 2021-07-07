@@ -212,8 +212,6 @@
 
      </platform>
 
-    
-   
    <!-- browser -->
     <platform name="browser">
         <config-file target="config.xml" parent="/*">

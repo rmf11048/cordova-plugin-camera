@@ -8,7 +8,7 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
-## [4.0.1-OS10]
+## [4.0.1-OS10 = 4.0.1-OS30]
 ### Feature
 - Feature: Add Crop, Rotate and Flip features on Android and iOS (https://outsystemsrd.atlassian.net/browse/RMET-626)(https://outsystemsrd.atlassian.net/browse/RMET-627)
 

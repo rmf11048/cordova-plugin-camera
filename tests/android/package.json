@@ -1,0 +1,12 @@
+{
+  "name": "CameraTests",
+  "version": "4.2.0-OS30",
+  "description": "Android Unit Tests for the plugin Camera",
+  "dependencies": {
+    "cordova-android": "^6.1.2"
+  },
+  "scripts": {
+    "test": "cd CameraTest && ./gradlew testDebugUnitTest --continue"
+  },
+  "author": "OutSystems Inc"
+}

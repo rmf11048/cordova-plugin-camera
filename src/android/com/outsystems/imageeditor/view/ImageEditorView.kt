@@ -21,7 +21,6 @@ import android.widget.ImageView
 import com.outsystems.imageeditor.controller.ImageEditorControllerImpl
 import com.outsystems.imageeditor.controller.ImageEditorFileManager
 import com.outsystems.imageeditor.controller.ImageEditorSaveImage
-import com.outsystems.rd.LocalCameraSampleApp.R
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Default
 import kotlin.math.floor
@@ -32,15 +31,14 @@ class ImageEditorView @JvmOverloads constructor(
   attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
+  private val cropView by lazy { findViewById<ImageCropperView>(getResourceId("id/cropperView")) }
+  private val imageView by lazy { findViewById<ImageView>(getResourceId("id/imageView")) }
 
-  private val cropView by lazy { findViewById<ImageCropperView>(R.id.cropperView) }
-  private val imageView by lazy { findViewById<ImageView>(R.id.imageView) }
+  private val cancelButton by lazy { findViewById<Button>(getResourceId("id/cancelButton")) }
+  private val okButton by lazy { findViewById<Button>(getResourceId("id/OKButton")) }
 
-  private val cancelButton by lazy { findViewById<Button>(R.id.cancelButton) }
-  private val okButton by lazy { findViewById<Button>(R.id.OKButton) }
-
-  private val rotateButton by lazy { findViewById<ImageButton>(R.id.rotateButton) }
-  private val flipButton by lazy { findViewById<ImageButton>(R.id.flipButton) }
+  private val rotateButton by lazy { findViewById<ImageButton>(getResourceId("id/rotateButton")) }
+  private val flipButton by lazy { findViewById<ImageButton>(getResourceId("id/flipButton")) }
 
   private var scaleGestureDetector: ScaleGestureDetector
   private var scaleGestureListener: ScaleListener
@@ -51,10 +49,8 @@ class ImageEditorView @JvmOverloads constructor(
 
   private var resultUri: Uri? = null
 
-
   init {
-
-    LayoutInflater.from(context).inflate(R.layout.image_editor_view, this)
+    LayoutInflater.from(context).inflate(getResourceId("layout/image_editor_view"), this)
 
     cancelButton.setOnClickListener{
       (this.context as Activity).finish()
@@ -75,7 +71,6 @@ class ImageEditorView @JvmOverloads constructor(
       onFlip()
     }
 
-
   }
 
   fun setInputImageUri(uri: Uri) {
@@ -95,9 +90,12 @@ class ImageEditorView @JvmOverloads constructor(
     return super.dispatchTouchEvent(ev)
   }
 
+  private fun getResourceId(typeAndName: String): Int {
+    val application = (context as Activity).application
+    return application.resources.getIdentifier(typeAndName, null, application.packageName)
+  }
 
   private fun onRotateLeft(){
-
     CoroutineScope(Default).launch {
       val sourceImage = (imageView.drawable as BitmapDrawable).bitmap
       val newImage = imageEditorController.rotateLeft(sourceImage)
@@ -106,12 +104,9 @@ class ImageEditorView @JvmOverloads constructor(
         updateImageView(newImage)
       }
     }
-
   }
   private fun onCrop(){
-
       CoroutineScope(Default).launch {
-
         Log.d(TAG, "${cropView.getFrame()}")
 
         val sourceImage = (imageView.drawable as BitmapDrawable).bitmap
@@ -127,14 +122,11 @@ class ImageEditorView @JvmOverloads constructor(
 
         Log.d(TAG, "${imageCropRect.left} ${imageCropRect.top} ${cropViewRect.width()} ${cropViewRect.height()}" )
 
-
         /* We need to create this scaledImage because the ImageView will scale with the screen, but the image
         dimensions will be the same as original.
         */
         val scaledImage = Bitmap.createScaledBitmap(sourceImage, scaledImageRect.width().toInt(), scaledImageRect.height().toInt(), false)
         val newImage = imageEditorController.crop(scaledImage, imageCropRect)
-
-
 
         resultUri?.let {
           imageEditorSave.saveImage(context, it.toString(), newImage)
@@ -142,10 +134,7 @@ class ImageEditorView @JvmOverloads constructor(
 
         (context as Activity).setResult(RESULT_OK)
         (context as Activity).finish();
-
-
       }
-
   }
   private fun onFlip(){
     CoroutineScope(Default).launch {
@@ -155,7 +144,6 @@ class ImageEditorView @JvmOverloads constructor(
       withContext(Dispatchers.Main){
         updateImageView(newImage)
       }
-
     }
   }
 
@@ -206,22 +194,15 @@ class ImageEditorView @JvmOverloads constructor(
 
     override fun onScale(scaleGestureDetector: ScaleGestureDetector): Boolean {
       scaleFactor *= scaleGestureDetector.scaleFactor
-
       imageView.scaleX = scaleFactor
       imageView.scaleY = scaleFactor
-
-
       imageView.requestLayout()
-
       return true
     }
-
   }
 
   companion object {
-
     private const val TAG = "ImageEditorView"
-
   }
 
 }

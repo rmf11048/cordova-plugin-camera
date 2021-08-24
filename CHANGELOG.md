@@ -8,6 +8,9 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
+### Fixes
+- Fix: Fixed Camera not opening on Android 12 (targetSDK & compileSDK = 31) (https://outsystemsrd.atlassian.net/browse/RMET-812)
+
 ## [4.0.1-OS10 = 4.0.1-OS30]
 ### Feature
 - Feature: Add Crop, Rotate and Flip features on Android and iOS (https://outsystemsrd.atlassian.net/browse/RMET-626)(https://outsystemsrd.atlassian.net/browse/RMET-627)

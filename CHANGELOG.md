@@ -8,21 +8,26 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
+## [4.2.0-OS32]
+### Fixes
+- Fix: New plugin release to include metadata tag in Extensability Configurations in the OS wrapper
+
+## [4.2.0-OS31]
 ### Fixes
 - Fix: Fixed Camera not opening on Android 12 (targetSDK & compileSDK = 31) (https://outsystemsrd.atlassian.net/browse/RMET-812)
 
-## [4.0.1-OS10 = 4.0.1-OS30]
+## [4.2.0-OS10 = 4.2.0-OS30]
 ### Feature
 - Feature: Add Crop, Rotate and Flip features on Android and iOS (https://outsystemsrd.atlassian.net/browse/RMET-626)(https://outsystemsrd.atlassian.net/browse/RMET-627)
 
-## [4.0.1-OS9]
+## [4.2.0-OS9]
 ### Fixes
 - Fix: apply correct orientation to PNG too (https://outsystemsrd.atlassian.net/browse/RMET-739)
 
-## [4.0.1-OS8]
+## [4.2.0-OS8]
 ### Fixes
 - Fix: Fixed Android conflict with file providers (https://outsystemsrd.atlassian.net/browse/RMET-738)
 
-## [4.0.1-OS7]
+## [4.2.0-OS7]
 ### Fixes
 - Fix: Fixed iOS implementation to ask for photo library permissions when needed (https://outsystemsrd.atlassian.net/browse/RMET-733)

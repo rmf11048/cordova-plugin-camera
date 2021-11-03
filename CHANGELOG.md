@@ -8,6 +8,10 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
+## [4.2.0-OS33]
+### Fixes
+- Fix: Updating plugin metadata to define its compatibility with MABS 7.2.0 upwards.
+
 ## [4.2.0-OS32]
 ### Fixes
 - Fix: New plugin release to include metadata tag in Extensability Configurations in the OS wrapper

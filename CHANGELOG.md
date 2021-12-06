@@ -8,6 +8,10 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
+## [4.2.0-OS34]
+### Fixes
+- Fix: Removed Swift class extensions so plugin compiles with projects with non-ascii names.
+
 ## [4.2.0-OS33]
 ### Fixes
 - Fix: Updating plugin metadata to define its compatibility with MABS 7.2.0 upwards.

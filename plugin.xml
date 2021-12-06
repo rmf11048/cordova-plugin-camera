@@ -179,12 +179,8 @@
          <source-file src="src/ios/CAShapeLayer+LineHelper.swift" />
          <source-file src="src/ios/CropRectLayer.swift" />
          <source-file src="src/ios/CropView.swift" />
-         <source-file src="src/ios/CropView+DragEvents.swift" />
          <source-file src="src/ios/GridRectLayer.swift" />
          <source-file src="src/ios/ImageEditorController.swift" />
-         <source-file src="src/ios/ImageEditorController+Crop.swift" />
-         <source-file src="src/ios/ImageEditorController+Flip.swift" />
-         <source-file src="src/ios/ImageEditorController+Rotate.swift" />
          <source-file src="src/ios/ImageEditorViewController.swift" />
          <source-file src="src/ios/SaveImageURLFeature.swift" />
          <source-file src="src/ios/ScaledImageView.swift" />

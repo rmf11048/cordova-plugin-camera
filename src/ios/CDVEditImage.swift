@@ -1,7 +1,7 @@
 import UIKit
 
 @objc(CDVEditImage)
-class CDVEditImage: CDVPlugin {
+class CDVEditImage: CDVPlugin, CDVImageEditorDelegate {
     
     static let shared = CDVEditImage()
 
@@ -35,9 +35,6 @@ class CDVEditImage: CDVPlugin {
         let navVC = UINavigationController(rootViewController: vc)
         self.viewController.present(navVC, animated: true, completion: nil)
     }
-}
-
-extension CDVEditImage: CDVImageEditorDelegate {
     
     func finishEditing(_ result: UIImage?, error: Error?) {
         

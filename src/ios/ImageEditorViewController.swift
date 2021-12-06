@@ -222,11 +222,6 @@ final class ImageEditorViewController: UIViewController {
             
         }
     }
-}
-
-// MARK: Actions
-
-extension ImageEditorViewController {
     
     @objc func cancelEdit(_ sender: Any?) {
         self.dismiss(animated: true, completion: nil)
@@ -260,6 +255,8 @@ extension ImageEditorViewController {
         imageView.image = newImg
     }
 }
+
+// MARK: Actions
 
 private class ActionButton: UIButton {
     

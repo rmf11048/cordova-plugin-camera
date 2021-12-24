@@ -231,7 +231,7 @@ static NSString* toBase64(NSData* data) {
     //            }
     //            else{
                     [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-                        [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+                        [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker andCallbackId:callbackId];
                     }];
     //            }
             }
@@ -239,8 +239,11 @@ static NSString* toBase64(NSData* data) {
     });
 }
 
-- (void)handlePhotoLibraryPermissionsWithStatus:(PHAuthorizationStatus)status andCameraPicker:(CDVCameraPicker*) cameraPicker
+- (void)handlePhotoLibraryPermissionsWithStatus:(PHAuthorizationStatus)status andCameraPicker:(CDVCameraPicker*) cameraPicker andCallbackId: (NSString*) callbackId
 {
+    
+    __weak CDVCamera* weakSelf = self;
+    
     typedef void (^ReturnBlock)(void);
     ReturnBlock block = ^void(){
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -248,6 +251,20 @@ static NSString* toBase64(NSData* data) {
             [self.viewController presentViewController:cameraPicker animated:YES completion:^{
                 self.hasPendingOperation = NO;
             }];
+        });
+    };
+    
+    ReturnBlock blockDialog = ^void(){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:NSLocalizedString(@"Access to the photos has been prohibited; please enable it in the Settings app to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
+            [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [weakSelf sendNoPermissionResult:callbackId];
+            }]];
+            [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+                [weakSelf sendNoPermissionResult:callbackId];
+            }]];
+            [weakSelf.viewController presentViewController:alertController animated:YES completion:nil];
         });
     };
     
@@ -262,7 +279,8 @@ static NSString* toBase64(NSData* data) {
 //            break;
 //        }
         case PHAuthorizationStatusDenied:
-            //do nothing
+            // Denied; show an alert
+            blockDialog();
             break;
         case PHAuthorizationStatusRestricted:
             //do nothing

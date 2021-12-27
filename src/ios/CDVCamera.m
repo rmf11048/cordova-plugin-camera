@@ -709,7 +709,12 @@ static NSString* toBase64(NSData* data) {
         } else if (picker.sourceType != UIImagePickerControllerSourceTypeCamera && ! IsAtLeastiOSVersion(@"11.0") && [ALAssetsLibrary authorizationStatus] != ALAuthorizationStatusAuthorized) {
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"has no access to assets"];
         } else {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"No Image Selected"];
+            if(picker.sourceType == UIImagePickerControllerSourceTypeCamera){
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"No picture taken."];
+            }
+            else if(picker.sourceType == SOURCE_TYPE_PHOTO_LIBRARY){
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"No image selected."];
+            }
         }
 
 

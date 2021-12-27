@@ -39,6 +39,8 @@
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
 #define SOURCE_TYPE_PHOTO_LIBRARY 0
 
+#define SOURCE_TYPE_CAMERA 1
+
 static NSSet* org_apache_cordova_validArrowDirections;
 
 static NSString* toBase64(NSData* data) {
@@ -166,13 +168,13 @@ static NSString* toBase64(NSData* data) {
                  {
                      // Denied; show an alert
                      dispatch_async(dispatch_get_main_queue(), ^{
-                         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:NSLocalizedString(@"Access to the camera has been prohibited; please enable it in the Settings app to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
+                         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:NSLocalizedString(@"Access to the camera has been prohibited. Please enable it in the Settings app to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
                          [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                             [weakSelf sendNoPermissionResult:command.callbackId];
+                             [weakSelf sendNoPermissionResult:command.callbackId andOperationType:SOURCE_TYPE_CAMERA];
                          }]];
                          [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
                              [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-                             [weakSelf sendNoPermissionResult:command.callbackId];
+                             [weakSelf sendNoPermissionResult:command.callbackId andOperationType:SOURCE_TYPE_CAMERA];
                          }]];
                          [weakSelf.viewController presentViewController:alertController animated:YES completion:nil];
                      });
@@ -231,7 +233,7 @@ static NSString* toBase64(NSData* data) {
     //            }
     //            else{
                     [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-                        [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker];
+                        [weakSelf handlePhotoLibraryPermissionsWithStatus:status andCameraPicker:cameraPicker andCallbackId:callbackId];
                     }];
     //            }
             }
@@ -239,8 +241,11 @@ static NSString* toBase64(NSData* data) {
     });
 }
 
-- (void)handlePhotoLibraryPermissionsWithStatus:(PHAuthorizationStatus)status andCameraPicker:(CDVCameraPicker*) cameraPicker
+- (void)handlePhotoLibraryPermissionsWithStatus:(PHAuthorizationStatus)status andCameraPicker:(CDVCameraPicker*) cameraPicker andCallbackId: (NSString*) callbackId
 {
+    
+    __weak CDVCamera* weakSelf = self;
+    
     typedef void (^ReturnBlock)(void);
     ReturnBlock block = ^void(){
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -248,6 +253,20 @@ static NSString* toBase64(NSData* data) {
             [self.viewController presentViewController:cameraPicker animated:YES completion:^{
                 self.hasPendingOperation = NO;
             }];
+        });
+    };
+    
+    ReturnBlock blockDialog = ^void(){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:NSLocalizedString(@"Access to the photos has been prohibited. Please enable it in the Settings app to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
+            [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [weakSelf sendNoPermissionResult:callbackId andOperationType:SOURCE_TYPE_PHOTO_LIBRARY];
+            }]];
+            [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+                [weakSelf sendNoPermissionResult:callbackId andOperationType:SOURCE_TYPE_PHOTO_LIBRARY];
+            }]];
+            [weakSelf.viewController presentViewController:alertController animated:YES completion:nil];
         });
     };
     
@@ -262,7 +281,8 @@ static NSString* toBase64(NSData* data) {
 //            break;
 //        }
         case PHAuthorizationStatusDenied:
-            //do nothing
+            // Denied; show an alert
+            blockDialog();
             break;
         case PHAuthorizationStatusRestricted:
             //do nothing
@@ -272,9 +292,18 @@ static NSString* toBase64(NSData* data) {
     }
 }
 
-- (void)sendNoPermissionResult:(NSString*)callbackId
+- (void)sendNoPermissionResult:(NSString*)callbackId andOperationType:(int) operationType
 {
-    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"has no access to camera"];   // error callback expects string ATM
+    NSString* message = @"";
+    
+    if(operationType == SOURCE_TYPE_CAMERA){
+        message = @"Access to the camera has been prohibited. Please enable it in the Settings app.";
+    }
+    else if(operationType == SOURCE_TYPE_PHOTO_LIBRARY){
+        message = @"Access to the photos has been prohibited. Please enable it in the Settings app.";
+    }
+    
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];   // error callback expects string ATM
 
     [self.commandDelegate sendPluginResult:result callbackId:callbackId];
 
@@ -680,7 +709,12 @@ static NSString* toBase64(NSData* data) {
         } else if (picker.sourceType != UIImagePickerControllerSourceTypeCamera && ! IsAtLeastiOSVersion(@"11.0") && [ALAssetsLibrary authorizationStatus] != ALAuthorizationStatusAuthorized) {
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"has no access to assets"];
         } else {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"No Image Selected"];
+            if(picker.sourceType == UIImagePickerControllerSourceTypeCamera){
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"No picture taken."];
+            }
+            else if(picker.sourceType == SOURCE_TYPE_PHOTO_LIBRARY){
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"No image selected."];
+            }
         }
 
 

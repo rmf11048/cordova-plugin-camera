@@ -8,6 +8,10 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
+### Fixes
+- Fix: Fixed error messages when cancelling to take or choose a photo, and when permissions for these are denied.
+- Fix: Added dialog to be shown when permissions to the photo library are denied (https://outsystemsrd.atlassian.net/browse/RMET-1272).
+
 ## [4.2.0-OS34]
 ### Fixes
 - Fix: Removed Swift class extensions so plugin compiles with projects with non-ascii names.

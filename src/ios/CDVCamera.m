@@ -39,6 +39,8 @@
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
 #define SOURCE_TYPE_PHOTO_LIBRARY 0
 
+#define SOURCE_TYPE_CAMERA 1
+
 static NSSet* org_apache_cordova_validArrowDirections;
 
 static NSString* toBase64(NSData* data) {
@@ -168,11 +170,11 @@ static NSString* toBase64(NSData* data) {
                      dispatch_async(dispatch_get_main_queue(), ^{
                          UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:NSLocalizedString(@"Access to the camera has been prohibited. Please enable it in the Settings app to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
                          [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                             [weakSelf sendNoPermissionResult:command.callbackId andOperationType:1];
+                             [weakSelf sendNoPermissionResult:command.callbackId andOperationType:SOURCE_TYPE_CAMERA];
                          }]];
                          [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
                              [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-                             [weakSelf sendNoPermissionResult:command.callbackId andOperationType:1];
+                             [weakSelf sendNoPermissionResult:command.callbackId andOperationType:SOURCE_TYPE_CAMERA];
                          }]];
                          [weakSelf.viewController presentViewController:alertController animated:YES completion:nil];
                      });
@@ -258,11 +260,11 @@ static NSString* toBase64(NSData* data) {
         dispatch_async(dispatch_get_main_queue(), ^{
             UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:NSLocalizedString(@"Access to the photos has been prohibited. Please enable it in the Settings app to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
             [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-                [weakSelf sendNoPermissionResult:callbackId andOperationType:2];
+                [weakSelf sendNoPermissionResult:callbackId andOperationType:SOURCE_TYPE_PHOTO_LIBRARY];
             }]];
             [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
                 [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-                [weakSelf sendNoPermissionResult:callbackId andOperationType:2];
+                [weakSelf sendNoPermissionResult:callbackId andOperationType:SOURCE_TYPE_PHOTO_LIBRARY];
             }]];
             [weakSelf.viewController presentViewController:alertController animated:YES completion:nil];
         });
@@ -294,11 +296,11 @@ static NSString* toBase64(NSData* data) {
 {
     NSString* message = @"";
     
-    if(operationType == 1){
-        message = @"Access to the camera has been prohibited. Please enable it in the settings app.";
+    if(operationType == SOURCE_TYPE_CAMERA){
+        message = @"Access to the camera has been prohibited. Please enable it in the Settings app.";
     }
-    else if(operationType == 2){
-        message = @"Access to the photos has been prohibited. Please enable it in the settings app.";
+    else if(operationType == SOURCE_TYPE_PHOTO_LIBRARY){
+        message = @"Access to the photos has been prohibited. Please enable it in the Settings app.";
     }
     
     CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:message];   // error callback expects string ATM

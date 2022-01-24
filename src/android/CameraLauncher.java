@@ -20,10 +20,13 @@ package org.apache.cordova.camera;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.app.RecoverableSecurityException;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
@@ -82,6 +85,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private static final int PHOTOLIBRARY = 0;          // Choose image from picture library (same as SAVEDPHOTOALBUM for Android)
     private static final int CAMERA = 1;                // Take picture from camera
     private static final int SAVEDPHOTOALBUM = 2;       // Choose image from picture library (same as PHOTOLIBRARY for Android)
+    private static final int RECOVERABLE_DELETE_REQUEST = 3;  // Result of Recoverable Security Exception
 
     private static final int PICTURE = 0;               // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
     private static final int VIDEO = 1;                 // allow selection of video only, ONLY RETURNS URL
@@ -142,6 +146,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private ExifHelper exifData;            // Exif data from source
     private String applicationId;
 
+    private Uri pendingDeleteMediaUri;
 
     /**
      * Executes the request and returns PluginResult.
@@ -239,7 +244,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     //--------------------------------------------------------------------------
     // LOCAL METHODS
     //--------------------------------------------------------------------------
-
     private String getTempDirectoryPath() {
         File cache = cordova.getActivity().getCacheDir();
         // Create the cache directory if it doesn't exist
@@ -368,7 +372,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         return new File(getTempDirectoryPath(), fileName);
     }
 
-
     /**
      * Get image from photo library.
      *
@@ -425,7 +428,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     new String(title)), (srcType + 1) * 16 + returnType + 1);
         }
     }
-
 
     /**
      * Applies all needed transformation to the image received from the camera.
@@ -641,7 +643,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         return "";
     }
 
-
     private String outputModifiedBitmap(Bitmap bitmap, Uri uri) throws IOException {
         // Some content: URIs do not map to file paths (e.g. picasa).
         String realPath = FileHelper.getRealPath(uri, this.cordova);
@@ -678,7 +679,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         }
         return modifiedPath;
     }
-
 
     /**
      * Applies all needed transformation to the image received from the gallery.
@@ -801,7 +801,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.failPicture("Did not complete!");
             }
         }
-
         else if (requestCode >= CROP_CAMERA) {
             if (resultCode == Activity.RESULT_OK) {
 
@@ -825,7 +824,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.failPicture("Did not complete!");
             }
         }
-
         // If CAMERA
         else if (srcType == CAMERA) {
             // If image available
@@ -859,7 +857,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.failPicture("Did not complete!");
             }
         }
-
         // If retrieving photo from library
         else if ((srcType == PHOTOLIBRARY) || (srcType == SAVEDPHOTOALBUM)) {
             if (resultCode == Activity.RESULT_OK && intent != null) {
@@ -886,7 +883,16 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 this.failPicture("Selection did not complete!");
             }
         }
-
+        else if(requestCode == RECOVERABLE_DELETE_REQUEST){
+            // retry media store deletion ...
+            ContentResolver contentResolver = this.cordova.getActivity().getContentResolver();
+            try {
+                contentResolver.delete(this.pendingDeleteMediaUri, null, null);
+            } catch (Exception e) {
+                LOG.e(LOG_TAG, "Unable to delete media store file after permission was granted");
+            }
+            this.pendingDeleteMediaUri = null;
+        }
     }
 
     private int exifToDegrees(int exifOrientation) {
@@ -1256,7 +1262,30 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 id--;
             }
             Uri uri = Uri.parse(contentStore + "/" + id);
-            this.cordova.getActivity().getContentResolver().delete(uri, null, null);
+            try {
+                this.cordova.getActivity().getContentResolver().delete(uri, null, null);
+            } catch (SecurityException securityException) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    RecoverableSecurityException recoverableSecurityException;
+                    if (securityException instanceof RecoverableSecurityException) {
+                        recoverableSecurityException = (RecoverableSecurityException) securityException;
+                    } else {
+                        throw new RuntimeException(securityException.getMessage(), securityException);
+                    }
+                    PendingIntent pendingIntent = recoverableSecurityException.getUserAction().getActionIntent();
+                    this.cordova.setActivityResultCallback(this);
+                    this.pendingDeleteMediaUri = uri;
+                    try {
+                        this.cordova.getActivity().startIntentSenderForResult(pendingIntent.getIntentSender(),
+                                RECOVERABLE_DELETE_REQUEST, null, 0, 0,
+                                0, null);
+                    } catch (IntentSender.SendIntentException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    throw new RuntimeException(securityException.getMessage(), securityException);
+                }
+            }
             cursor.close();
         }
     }
@@ -1332,7 +1361,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     public void onScanCompleted(String path, Uri uri) {
         this.conn.disconnect();
     }
-
 
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
@@ -1435,8 +1463,5 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
 
     }
-
-
-
 
 }

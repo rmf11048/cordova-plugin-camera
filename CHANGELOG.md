@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 The changes documented here do not include those from the original repository.
 
+## [Unreleased]
+
+### Fixes
+- Fix: Fixed crash when taking picture in Nokia 4.2 running Android 10 (https://outsystemsrd.atlassian.net/browse/RMET-1370)
+
 ## [4.2.0-OS35]
 
 ### Fixes

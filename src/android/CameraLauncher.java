@@ -57,6 +57,7 @@ import org.apache.cordova.PermissionHelper;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -108,7 +109,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
     private static final String TAKE_PICTURE_ACTION = "takePicture";
 
-    public static final int PERMISSION_DENIED_ERROR = 20;
     public static final int TAKE_PIC_SEC = 0;
     public static final int SAVE_TO_ALBUM_SEC = 1;
 
@@ -119,10 +119,13 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
     private static final int CROP_GALERY = 666;
 
     private static final String TIME_FORMAT = "yyyyMMdd_HHmmss";
-    
+
     //we need literal values because we cannot simply do Manifest.permission.READ_MEDIA_IMAGES, because of the target sdk
     private static final String READ_MEDIA_IMAGES = "android.permission.READ_MEDIA_IMAGES";
     private static final String READ_MEDIA_VIDEO = "android.permission.READ_MEDIA_VIDEO";
+
+    //for errors
+    private static final String ERROR_FORMAT_PREFIX = "OS-PLUG-CAMR-";
 
     private int mQuality;                   // Compression quality hint (0-100: 0=low quality & high compression, 100=compress of max quality)
     private int targetWidth;                // desired width of the image
@@ -223,7 +226,6 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                     if(Build.VERSION.SDK_INT < 33 && !PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
                         PermissionHelper.requestPermission(this, SAVE_TO_ALBUM_SEC, Manifest.permission.READ_EXTERNAL_STORAGE);
                     }
-
                     else if(Build.VERSION.SDK_INT >= 33 && (!PermissionHelper.hasPermission(this, READ_MEDIA_IMAGES) || !PermissionHelper.hasPermission(this, READ_MEDIA_VIDEO))){
                         PermissionHelper.requestPermissions(this, SAVE_TO_ALBUM_SEC, new String[]{ READ_MEDIA_VIDEO, READ_MEDIA_IMAGES});
                     }
@@ -525,7 +527,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             // Double-check the bitmap.
             if (bitmap == null) {
                 LOG.d(LOG_TAG, "I either have a null image path or bitmap");
-                this.failPicture("Unable to create bitmap!");
+                sendError(CameraError.TAKE_PHOTO_ERROR);
                 return;
             }
 
@@ -567,7 +569,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 // Double-check the bitmap.
                 if (bitmap == null) {
                     LOG.d(LOG_TAG, "I either have a null image path or bitmap");
-                    this.failPicture("Unable to create bitmap!");
+                    sendError(CameraError.TAKE_PHOTO_ERROR);
                     return;
                 }
 
@@ -711,7 +713,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             if (croppedUri != null) {
                 uri = croppedUri;
             } else {
-                this.failPicture("null data from photo library");
+                sendError(CameraError.GET_IMAGE_ERROR);
                 return;
             }
         }
@@ -747,7 +749,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 }
                 if (bitmap == null) {
                     LOG.d(LOG_TAG, "I either have a null image path or bitmap");
-                    this.failPicture("Unable to create bitmap!");
+                    sendError(CameraError.GET_IMAGE_ERROR);
                     return;
                 }
 
@@ -771,7 +773,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                         } catch (Exception e) {
                             e.printStackTrace();
-                            this.failPicture("Error retrieving image.");
+                            sendError(CameraError.GET_IMAGE_ERROR);
                         }
                     } else {
                         this.callbackContext.success(fileLocation);
@@ -814,10 +816,10 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             }
             else if (resultCode == Activity.RESULT_CANCELED) {
-                this.failPicture("No Image Selected");
+                sendError(CameraError.NO_IMAGE_SELECTED_ERROR);
             }
             else {
-                this.failPicture("Did not complete!");
+                sendError(CameraError.EDIT_IMAGE_ERROR);
             }
         }
         else if (requestCode >= CROP_CAMERA) {
@@ -835,12 +837,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             }// If cancelled
             else if (resultCode == Activity.RESULT_CANCELED) {
-                this.failPicture("No Image Selected");
+                sendError(CameraError.NO_PICTURE_TAKEN_ERROR);
             }
 
             // If something else
             else {
-                this.failPicture("Did not complete!");
+                sendError(CameraError.EDIT_IMAGE_ERROR);
             }
         }
         // If CAMERA
@@ -862,18 +864,18 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                    this.failPicture("Error capturing image.");
+                    sendError(CameraError.TAKE_PHOTO_ERROR);
                 }
             }
 
             // If cancelled
             else if (resultCode == Activity.RESULT_CANCELED) {
-                this.failPicture("No Image Selected");
+                sendError(CameraError.NO_PICTURE_TAKEN_ERROR);
             }
 
             // If something else
             else {
-                this.failPicture("Did not complete!");
+                sendError(CameraError.TAKE_PHOTO_ERROR);
             }
         }
         // If retrieving photo from library
@@ -897,9 +899,9 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
             }
             else if (resultCode == Activity.RESULT_CANCELED) {
-                this.failPicture("No Image Selected");
+                sendError(CameraError.NO_IMAGE_SELECTED_ERROR);
             } else {
-                this.failPicture("Selection did not complete!");
+                sendError(CameraError.GET_IMAGE_ERROR);
             }
         }
         else if(requestCode == RECOVERABLE_DELETE_REQUEST){
@@ -1345,7 +1347,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 code = null;
             }
         } catch (Exception e) {
-            this.failPicture("Error compressing image.");
+            sendError(CameraError.PROCESS_IMAGE_ERROR);
         }
         jpeg_data = null;
     }
@@ -1383,12 +1385,21 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
 
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
-        for (int r : grantResults) {
-            if (r == PackageManager.PERMISSION_DENIED) {
-                this.callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, PERMISSION_DENIED_ERROR));
+
+        for (int i = 0; i < grantResults.length; i++) {
+            if (grantResults[i] == PackageManager.PERMISSION_DENIED && permissions[i].equals(Manifest.permission.CAMERA)) {
+                sendError(CameraError.CAMERA_PERMISSION_DENIED_ERROR);
+                return;
+            }
+            else if(grantResults[i] == PackageManager.PERMISSION_DENIED && ((Build.VERSION.SDK_INT < 33
+                    && (permissions[i].equals(Manifest.permission.READ_EXTERNAL_STORAGE) || permissions[i].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)))
+                    || (Build.VERSION.SDK_INT >= 33
+                    && (permissions[i].equals(READ_MEDIA_IMAGES) || permissions[i].equals(READ_MEDIA_VIDEO))))){
+                sendError(CameraError.GALLERY_PERMISSION_DENIED_ERROR);
                 return;
             }
         }
+
         switch (requestCode) {
             case TAKE_PIC_SEC:
                 takePicture(this.destType, this.encodingType);
@@ -1488,6 +1499,23 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         else{
             return new String[]{Manifest.permission.CAMERA, READ_MEDIA_IMAGES, READ_MEDIA_VIDEO};
         }
+    }
+
+    private void sendError(CameraError error){
+        JSONObject jsonResult = new JSONObject();
+        try{
+            jsonResult.put("code", formatErrorCode(error.code));
+            jsonResult.put("message", error.message);
+            this.callbackContext.error(jsonResult);
+        }catch (JSONException e){
+            LOG.d(LOG_TAG, "Error: JSONException occurred while preparing to send an error.");
+            this.callbackContext.error("There was an error performing the operation.");
+        }
+    }
+
+    private String formatErrorCode(int code) {
+        String stringCode = Integer.toString(code);
+        return ERROR_FORMAT_PREFIX + ("0000" + stringCode).substring(stringCode.length());
     }
 
 }

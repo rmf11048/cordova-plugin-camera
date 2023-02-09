@@ -16,17 +16,17 @@ resources:
       name: OutSystems/mobile-ui-tests
       endpoint: OutSystems
 
-stages:
-- checkout: mobile-ui-tests
-- template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
-  parameters:
-    jobName: Camera
-    DATACENTER: eu
-    DEVICE_VERSION: 11
-    MABS: 9
-    PLUGIN_NAME: camera
-    TAGS: '@p0'
-    RETRY: 1
-    THREADS: 3
-    DEVICE: 'samsung or google'
-    checkChanges: false
+steps:
+  - checkout: mobile-ui-tests
+  - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
+    parameters:
+      jobName: Camera
+      DATACENTER: eu
+      DEVICE_VERSION: 11
+      MABS: 9
+      PLUGIN_NAME: camera
+      TAGS: '@p0'
+      RETRY: 1
+      THREADS: 3
+      DEVICE: 'samsung or google'
+      checkChanges: false

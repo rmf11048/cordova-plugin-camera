@@ -11,7 +11,7 @@ pool:
 resources:
   repositories:
     - repository: mobile-ui-tests
-      type: github
+      type: git
       ref: main
       name: OutSystems/mobile-ui-tests
 

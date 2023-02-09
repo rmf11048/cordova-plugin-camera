@@ -3,6 +3,22 @@ String getVersion() {
   return compileSdkVersion >= 28 ? "28.0.0" : "24.1.1+" 
 }
 
+repositories {
+  google()
+  mavenCentral()
+  repositories {
+    maven { url 'https://pkgs.dev.azure.com/OutSystemsRD/9e79bc5b-69b2-4476-9ca5-d67594972a52/_packaging/PublicArtifactRepository/maven/v1' }
+  }
+}
+
+apply plugin: 'kotlin-kapt'
+
+dependencies {
+  implementation("com.github.outsystems:oscore-android:1.1.0@aar")
+  implementation("com.github.outsystems:oscordova-android:1.1.0@aar")
+  implementation("com.github.outsystems:oscamera-android:0.0.9@aar")
+}
+
 // Defer the definition of the dependencies to the end
 // of the "configuration" phase from the app build.gradle file
 // so that we can inquire the proper compile sdk version being used.

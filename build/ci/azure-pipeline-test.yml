@@ -22,9 +22,9 @@ stages:
     jobName: Camera
     DATACENTER: eu
     DEVICE_VERSION: 11
-    MABS: ${{ parameters.MABS }}
+    MABS: 9
     PLUGIN_NAME: camera
-    TAGS: ${{ parameters.TAGS }}
+    TAGS: '@p0'
     RETRY: 1
     THREADS: 3
     DEVICE: 'samsung or google'

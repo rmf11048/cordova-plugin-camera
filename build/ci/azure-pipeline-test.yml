@@ -12,7 +12,7 @@ resources:
   repositories:
     - repository: mobile-ui-tests
       type: github
-      ref: main
+      ref: master
       name: OutSystems/mobile-ui-tests
       endpoint: OutSystems
 

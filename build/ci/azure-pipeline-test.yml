@@ -17,6 +17,7 @@ resources:
       endpoint: OutSystems
 
 stages:
+- checkout: mobile-ui-tests
 - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
   parameters:
     jobName: Camera

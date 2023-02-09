@@ -18,6 +18,8 @@ resources:
 
 steps:
   - checkout: mobile-ui-tests
+
+stages:
   - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
     parameters:
       jobName: Camera

@@ -1,0 +1,30 @@
+name: 'E2E UI Test'
+
+pr: none
+trigger:
+  - master
+  - outsystems
+
+pool:
+  vmImage: "ubuntu-20.04"
+
+resources:
+  repositories:
+    - repository: mobile-ui-tests
+      type: github
+      ref: main
+      name: OutSystems/rmobile-ui-tests
+
+stages:
+- template: ./templates/android-plugin-stage-template.yml@mobile-ui-tests
+  parameters:
+    jobName: Camera
+    DATACENTER: eu
+    DEVICE_VERSION: 11
+    MABS: ${{ parameters.MABS }}
+    PLUGIN_NAME: camera
+    TAGS: ${{ parameters.TAGS }}
+    RETRY: 1
+    THREADS: 3
+    DEVICE: 'samsung or google'
+    checkChanges: false

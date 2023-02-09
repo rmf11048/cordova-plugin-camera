@@ -11,9 +11,10 @@ pool:
 resources:
   repositories:
     - repository: mobile-ui-tests
-      type: git
+      type: github
       ref: main
       name: OutSystems/mobile-ui-tests
+      endpoint: OutSystems
 
 stages:
 - template: ./templates/android-plugin-stage-template.yml@mobile-ui-tests

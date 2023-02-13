@@ -24,8 +24,8 @@ stages:
       - checkout: self
       - checkout: mobile-ui-tests
     - template: ./plugins_variables.yml
-    parameters:
-      pluginName: camera
+      parameters:
+        pluginName: camera
     - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests
       parameters:
         PACKAGE: $(ANDROID_PACKAGE_ID)

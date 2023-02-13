@@ -17,7 +17,7 @@ resources:
       endpoint: OutSystems
 
 stages:
-  - stage: Run Camera E2E Tests on Android
+  - stage: Camera_E2E_Tests_Android
     variables:
       - group: "Camera Plugin Variables"
     jobs: 

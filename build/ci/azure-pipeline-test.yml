@@ -20,6 +20,7 @@ stages:
   - stage: Camera_E2E_Tests_Android
     variables:
       - group: "Camera Plugin Variables"
+      - group: "Saucelabs User Variables"
     jobs: 
     - job: checkout_repos
       steps:

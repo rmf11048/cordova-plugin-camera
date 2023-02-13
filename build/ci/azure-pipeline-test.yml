@@ -23,7 +23,7 @@ stages:
       steps:
       - checkout: self
       - checkout: mobile-ui-tests
-    - template: ./plugins_variables.yml
+    - template: pipelines/templates/plugins_variables.yml@mobile-ui-tests
       parameters:
         pluginName: camera
     - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests

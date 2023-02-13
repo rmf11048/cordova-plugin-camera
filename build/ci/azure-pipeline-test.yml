@@ -24,6 +24,7 @@ stages:
       - checkout: mobile-ui-tests
   - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
     parameters:
+      workingDirectory: $(System.DefaultWorkingDirectory)/mobile-ui-tests
       jobName: Camera
       DATACENTER: eu
       DEVICE_VERSION: 11

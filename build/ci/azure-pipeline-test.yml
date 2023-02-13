@@ -12,7 +12,7 @@ resources:
   repositories:
     - repository: mobile-ui-tests
       type: github
-      ref: master
+      ref: feat/custom-working-directory
       name: OutSystems/mobile-ui-tests
       endpoint: OutSystems
 
@@ -24,7 +24,7 @@ stages:
       - checkout: mobile-ui-tests
   - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
     parameters:
-      workingDirectory: $(System.DefaultWorkingDirectory)/mobile-ui-tests
+      WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests
       jobName: Camera
       DATACENTER: eu
       DEVICE_VERSION: 11

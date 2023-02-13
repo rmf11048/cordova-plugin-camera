@@ -25,8 +25,6 @@ stages:
       steps:
       - checkout: self
       - checkout: mobile-ui-tests
-    - job: run_ui_tests
-      steps:
       - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests
         parameters:
           PACKAGE: $(ANDROID_PACKAGE_ID)

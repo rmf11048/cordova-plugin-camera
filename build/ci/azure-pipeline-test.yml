@@ -17,22 +17,22 @@ resources:
       endpoint: OutSystems
 
 stages:
-  - stage: Checkout
+  - stage: Run E2E Tests
     jobs: 
     - job: checkout_repos
       steps:
       - checkout: self
       - checkout: mobile-ui-tests
-  - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
-    parameters:
-      WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests
-      jobName: Camera
-      DATACENTER: eu
-      DEVICE_VERSION: 11
-      MABS: 9
-      PLUGIN_NAME: camera
-      TAGS: '@p0'
-      RETRY: 1
-      THREADS: 3
-      DEVICE: 'samsung or google'
-      checkChanges: false
+    - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
+      parameters:
+        WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests
+        jobName: Camera
+        DATACENTER: eu
+        DEVICE_VERSION: 11
+        MABS: 9
+        PLUGIN_NAME: camera
+        TAGS: '@p0'
+        RETRY: 1
+        THREADS: 3
+        DEVICE: 'samsung or google'
+        checkChanges: false

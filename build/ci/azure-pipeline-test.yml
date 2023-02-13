@@ -18,14 +18,13 @@ resources:
 
 stages:
   - stage: Run Camera E2E Tests on Android
+    variables:
+      - group: "Camera Plugin Variables"
     jobs: 
     - job: checkout_repos
       steps:
       - checkout: self
       - checkout: mobile-ui-tests
-    - template: pipelines/templates/plugins_variables.yml@mobile-ui-tests
-      parameters:
-        pluginName: camera
     - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests
       parameters:
         PACKAGE: $(ANDROID_PACKAGE_ID)

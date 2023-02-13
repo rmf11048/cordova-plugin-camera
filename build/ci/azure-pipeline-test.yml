@@ -19,8 +19,9 @@ resources:
 stages:
   - stage: Checkout
     jobs: 
-    - job: checkout_mut
+    - job: checkout_repos
       steps:
+      - checkout: self
       - checkout: mobile-ui-tests
   - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
     parameters:

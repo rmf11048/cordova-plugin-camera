@@ -25,18 +25,20 @@ stages:
       steps:
       - checkout: self
       - checkout: mobile-ui-tests
-    - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests
-      parameters:
-        PACKAGE: $(ANDROID_PACKAGE_ID)
-        MABS: 9
-        DATACENTER: eu
-        DEVICE: 'samsung or google'
-        DEVICE_PLATFORM: Android
-        DEVICE_VERSION: 11
-        PLATFORM_TYPE: Mobile
-        PLUGIN: camera
-        TAGS: '@p0'
-        RETRY: 1
-        TEST_TYPE: native
-        THREADS: 3
-        WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests
+    - job: run_ui_tests
+      steps:
+      - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests
+        parameters:
+          PACKAGE: $(ANDROID_PACKAGE_ID)
+          MABS: 9
+          DATACENTER: eu
+          DEVICE: 'samsung or google'
+          DEVICE_PLATFORM: Android
+          DEVICE_VERSION: 11
+          PLATFORM_TYPE: Mobile
+          PLUGIN: camera
+          TAGS: '@p0'
+          RETRY: 1
+          TEST_TYPE: native
+          THREADS: 3
+          WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests

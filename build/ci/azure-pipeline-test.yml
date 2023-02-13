@@ -17,22 +17,27 @@ resources:
       endpoint: OutSystems
 
 stages:
-  - stage: Run E2E Tests
+  - stage: Run Camera E2E Tests on Android
     jobs: 
     - job: checkout_repos
       steps:
       - checkout: self
       - checkout: mobile-ui-tests
-    - template: pipelines/templates/android-plugin-stage-template.yml@mobile-ui-tests
+    - template: ./plugins_variables.yml
+    parameters:
+      pluginName: camera
+    - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests
       parameters:
-        WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests
-        jobName: Camera
-        DATACENTER: eu
-        DEVICE_VERSION: 11
+        PACKAGE: $(ANDROID_PACKAGE_ID)
         MABS: 9
-        PLUGIN_NAME: camera
+        DATACENTER: eu
+        DEVICE: 'samsung or google'
+        DEVICE_PLATFORM: Android
+        DEVICE_VERSION: 11
+        PLATFORM_TYPE: Mobile
+        PLUGIN: camera
         TAGS: '@p0'
         RETRY: 1
+        TEST_TYPE: native
         THREADS: 3
-        DEVICE: 'samsung or google'
-        checkChanges: false
+        WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests

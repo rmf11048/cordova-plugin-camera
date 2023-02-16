@@ -9,6 +9,7 @@ The changes documented here do not include those from the original repository.
 ## [Unreleased]
 
 ### Features
+- [Android] Implements CaptureVideo feature (https://outsystemsrd.atlassian.net/browse/RMET-2212).
 - [iOS] - Implement `Capture Video` client action (https://outsystemsrd.atlassian.net/browse/RMET-2223).
 - [Cordova] Implement `Capture Video` client action (https://outsystemsrd.atlassian.net/browse/RMET-2288).
 - [Android] ChooseFromGallery revamp (https://outsystemsrd.atlassian.net/browse/RMET-1984).

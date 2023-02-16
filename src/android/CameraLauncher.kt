@@ -23,17 +23,18 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
 import android.util.Log
 import androidx.core.content.FileProvider
 import com.outsystems.plugins.camera.controller.*
+import com.outsystems.plugins.camera.controller.helper.OSCAMRExifHelper
+import com.outsystems.plugins.camera.controller.helper.OSCAMRFileHelper
+import com.outsystems.plugins.camera.controller.helper.OSCAMRImageHelper
+import com.outsystems.plugins.camera.controller.helper.OSCAMRMediaHelper
 import com.outsystems.plugins.camera.model.OSCAMRError
 import com.outsystems.plugins.camera.model.OSCAMRParameters
 import org.apache.cordova.*
@@ -89,6 +90,23 @@ class CameraLauncher : CordovaPlugin() {
     private var camController: OSCAMRController? = null
     private var camParameters: OSCAMRParameters? = null
 
+    override fun pluginInitialize() {
+        super.pluginInitialize()
+
+        //Adding an API to CoreAndroid to get the BuildConfigValue
+        //This allows us to not make this a breaking change to embedding
+        applicationId =
+            BuildHelper.getBuildConfigValue(cordova.activity, "APPLICATION_ID") as String
+        applicationId = preferences.getString("applicationId", applicationId)
+        camController = OSCAMRController(applicationId, OSCAMRExifHelper(), OSCAMRFileHelper(), OSCAMRMediaHelper(), OSCAMRImageHelper())
+
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        camController?.deleteVideoFilesFromCache(cordova.activity)
+    }
+
     /**
      * Executes the request and returns PluginResult.
      *
@@ -104,12 +122,7 @@ class CameraLauncher : CordovaPlugin() {
         callbackContext: CallbackContext
     ): Boolean {
         this.callbackContext = callbackContext
-        //Adding an API to CoreAndroid to get the BuildConfigValue
-        //This allows us to not make this a breaking change to embedding
-        applicationId =
-            BuildHelper.getBuildConfigValue(cordova.activity, "APPLICATION_ID") as String
-        applicationId = preferences.getString("applicationId", applicationId)
-        camController = OSCAMRController(applicationId, OSCAMRExifHelper(), OSCAMRFileHelper(), OSCAMRMediaHelper(), OSCAMRImageHelper())
+
         /**
          * Fix for the OutSystems NativeShell
          * The com.outsystems.myapp.BuildConfig class from BuildHelper.getBuildConfigValue is only created when using the cordova to build our app,
@@ -187,6 +200,10 @@ class CameraLauncher : CordovaPlugin() {
         }
         else if (action == "editPicture") {
             callEditImage(args)
+            return true
+        }
+        else if (action == "captureVideo") {
+            callCaptureVideo()
             return true
         }
         return false
@@ -317,8 +334,16 @@ class CameraLauncher : CordovaPlugin() {
         camController?.editImage(cordova.activity, imageBase64, null, null)
     }
 
-    private fun getCompressFormatForEncodingType(encodingType: Int): Bitmap.CompressFormat {
-        return if (encodingType == JPEG) Bitmap.CompressFormat.JPEG else Bitmap.CompressFormat.PNG
+    fun callCaptureVideo() {
+        if(!PermissionHelper.hasPermission(this, Manifest.permission.CAMERA)){
+            PermissionHelper.requestPermission(this, CAPTURE_VIDEO_SEC, Manifest.permission.CAMERA)
+            return
+        }
+        cordova.setActivityResultCallback(this)
+        camController?.captureVideo(cordova.activity
+        ) {
+            sendError(it)
+        }
     }
 
     /**
@@ -461,17 +486,32 @@ class CameraLauncher : CordovaPlugin() {
                     },
                     {
                         sendError(it)
-                    })
+                    }
+                )
             }
             else if (resultCode == Activity.RESULT_CANCELED) {
-                //sendError(OSCAMRError.EDIT_IMAGE_ERROR)
-                //alterar isto depois para EDIT_CANCELLED_ERROR com o OSCAMRError
-                val pluginResult =
-                    PluginResult(PluginResult.Status.ERROR, OSCAMRError.EDIT_CANCELLED_ERROR.toString())
-                this.callbackContext?.sendPluginResult(pluginResult)
+                sendError(OSCAMRError.EDIT_CANCELLED_ERROR)
             }
             else {
                 sendError(OSCAMRError.EDIT_IMAGE_ERROR)
+            }
+        } else if (requestCode == REQUEST_VIDEO_CAPTURE) {
+            if (resultCode == Activity.RESULT_OK) {
+                camController?.processResultFromVideo(intent,
+                    {
+                        val pluginResult = PluginResult(PluginResult.Status.OK, it)
+                        this.callbackContext?.sendPluginResult(pluginResult)
+                    },
+                    {
+                        sendError(it)
+                    }
+                )
+            }
+            else if (resultCode == Activity.RESULT_CANCELED) {
+                sendError(OSCAMRError.CAPTURE_VIDEO_CANCELLED_ERROR)
+            }
+            else {
+                sendError(OSCAMRError.CAPTURE_VIDEO_ERROR)
             }
         } else if (requestCode == RECOVERABLE_DELETE_REQUEST) {
             // retry media store deletion ...
@@ -522,6 +562,9 @@ class CameraLauncher : CordovaPlugin() {
                 camController?.takePicture(this.cordova.activity, destType, encodingType)
             }
             SAVE_TO_ALBUM_SEC -> callGetImage(srcType, destType, encodingType)
+            CAPTURE_VIDEO_SEC -> {
+                callCaptureVideo()
+            }
         }
     }
 
@@ -608,6 +651,7 @@ class CameraLauncher : CordovaPlugin() {
         private const val SAVEDPHOTOALBUM =
             2 // Choose image from picture library (same as PHOTOLIBRARY for Android)
         private const val RECOVERABLE_DELETE_REQUEST = 3 // Result of Recoverable Security Exception
+        private const val REQUEST_VIDEO_CAPTURE = 1
         private const val PICTURE =
             0 // allow selection of still pictures only. DEFAULT. Will return format specified via DestinationType
         private const val VIDEO = 1 // allow selection of video only, ONLY RETURNS URL
@@ -627,8 +671,10 @@ class CameraLauncher : CordovaPlugin() {
         private const val IMAGE_URI_KEY = "imageUri"
         private const val IMAGE_FILE_PATH_KEY = "imageFilePath"
         private const val TAKE_PICTURE_ACTION = "takePicture"
-        const val TAKE_PIC_SEC = 0
-        const val SAVE_TO_ALBUM_SEC = 1
+        private const val TAKE_PIC_SEC = 0
+        private const val SAVE_TO_ALBUM_SEC = 1
+        private const val CAPTURE_VIDEO_SEC = 2
+
         private const val LOG_TAG = "CameraLauncher"
 
         //Where did this come from?

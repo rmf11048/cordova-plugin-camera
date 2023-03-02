@@ -2,8 +2,9 @@ name: 'E2E UI Test'
 
 pr: none
 trigger:
-  - master
-  - outsystems
+  tags:
+    include:
+    - '*'
 
 pool:
   vmImage: "ubuntu-20.04"
@@ -15,6 +16,11 @@ resources:
       ref: feat/custom-working-directory
       name: OutSystems/mobile-ui-tests
       endpoint: OutSystems
+    - repository: MobilePluginsODCPipeline
+      type: github
+      ref: feat/RMET-2294-uploadSaucelabs
+      name: OutSystems/MobilePluginsODCPipeline
+      endpoint: OutSystems      
 
 stages:
   - stage: Camera_E2E_Tests_Android
@@ -26,6 +32,32 @@ stages:
       steps:
       - checkout: self
       - checkout: mobile-ui-tests
+      - checkout: MobilePluginsODCPipeline
+      - template: build/ci/update-wrapper.yaml@MobilePluginsODCPipeline
+        parameters:
+          secretFileName: "eng-osrd-us-02-StampsInformation.json"
+          PLUGIN_APP_KEY: "7acb2c1d-51bf-4ef4-8cb8-a05573501b6a"
+          PLUGIN_UPDATE_URL: "https://github.com/OutSystems/cordova-plugin-camera#$(Build.SourceBranchName)" 
+          PLUGIN_UPDATE_VERSION: "$(Build.SourceBranchName)"
+      - template: build/ci/refresh-sampleapp.yaml@MobilePluginsODCPipeline
+        parameters:
+          secretFileName: "eng-osrd-us-02-StampsInformation.json"
+          SAMPLEAPP_APP_KEY: "3c0451ef-0d99-4e09-adb5-718e009deb9d"
+      - script: |
+          echo "##vso[task.setvariable variable=apkPath]$(cat /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.apk-path)"
+          echo "##vso[task.setvariable variable=ipaPath]$(cat /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.ipa-path)"
+        name: set_path_vars
+        displayName: 'Set package variables'
+      - script: |
+          npm run saucelabsUpload $(apkPath) -o /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.android-slid
+          npm run saucelabsUpload $(ipaPath) -o /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.ios-slid
+        name: upload_packages
+        displayName: 'Upload package to SauceLabs'    
+      - script: |
+          echo "##vso[task.setvariable variable=androidSLID]$(cat /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.android-slid)"
+          echo "##vso[task.setvariable variable=iosSLID]$(cat /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.ios-slid)"
+        name: set_slid_vars
+        displayName: 'Set SauceLabs Storage IDs variables'            
       - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests
         parameters:
           PACKAGE: $(ANDROID_PACKAGE_ID)
@@ -40,4 +72,5 @@ stages:
           RETRY: 1
           TEST_TYPE: native
           THREADS: 3
+          STORAGE_ID: $(ANDROID_SLID)
           WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests

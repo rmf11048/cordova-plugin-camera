@@ -69,8 +69,8 @@ stages:
               workingDirectory: $(System.DefaultWorkingDirectory)/mobile-ui-tests/
             continueOnError: true    
           - script: |
-              node ./scripts/upload_application.js $(apkPath) -o /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.android-slid
-              node ./scripts/upload_application.js $(ipaPath) -o /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.ios-slid
+              node ./scripts/upload_application.js -- -u $SAUCELABS_USER_NAME -k $SAUCELABS_USER_KEY -f $(apkPath) -o /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.android-slid
+              node ./scripts/upload_application.js -- -u $SAUCELABS_USER_NAME -k $SAUCELABS_USER_KEY -f $(ipaPath) -o /tmp/3c0451ef-0d99-4e09-adb5-718e009deb9d.ios-slid
             workingDirectory: $(System.DefaultWorkingDirectory)/mobile-ui-tests
             name: upload_packages
             displayName: "Upload package to SauceLabs"
@@ -93,5 +93,5 @@ stages:
               RETRY: 1
               TEST_TYPE: native
               THREADS: 3
-              STORAGE_ID: $(ANDROID_SLID)
+              STORAGE_ID: $(androidSLID)
               WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests

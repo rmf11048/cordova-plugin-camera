@@ -86,7 +86,7 @@ stages:
               DATACENTER: eu
               DEVICE: "samsung or google"
               DEVICE_PLATFORM: Android
-              DEVICE_VERSION: 11
+              DEVICE_VERSION: 12
               PLATFORM_TYPE: Mobile
               PLUGIN: camera
               TAGS: "@p0"
@@ -95,3 +95,21 @@ stages:
               THREADS: 3
               STORAGE_ID: $(androidSLID)
               WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests
+          - template: pipelines/templates/build-and-execute-tests-template.yml@mobile-ui-tests
+            parameters:
+              PACKAGE: $(IOS_BUNDLE_ID)
+              MABS: 9
+              DATACENTER: eu
+              DEVICE_PLATFORM: iOS
+              DEVICE_VERSION: 16
+              PLATFORM_TYPE: Mobile
+              PLUGIN: camera
+              TAGS: "@p0"
+              RETRY: 1
+              TEST_TYPE: native
+              THREADS: 3
+              STORAGE_ID: $(iosSLID)
+              WORKING_DIR: $(System.DefaultWorkingDirectory)/mobile-ui-tests
+
+
+              

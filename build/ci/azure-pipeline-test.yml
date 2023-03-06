@@ -13,12 +13,12 @@ resources:
   repositories:
     - repository: mobile-ui-tests
       type: github
-      ref: feat/custom-working-directory
+      ref: master
       name: OutSystems/mobile-ui-tests
       endpoint: OutSystems
     - repository: MobilePluginsODCPipeline
       type: github
-      ref: feat/RMET-2294-uploadSaucelabs
+      ref: main
       name: OutSystems/MobilePluginsODCPipeline
       endpoint: OutSystems
 

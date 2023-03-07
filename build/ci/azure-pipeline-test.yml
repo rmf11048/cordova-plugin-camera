@@ -62,7 +62,7 @@ stages:
             inputs:
               workingFile: '$(System.DefaultWorkingDirectory)/mobile-ui-tests/.npmrc'
           - task: CmdLine@2
-            name: install_dep_cp
+            name: install_dependencies_upload
             displayName: 'Install dependencies using yarn'
             inputs:
               script: 'yarn'

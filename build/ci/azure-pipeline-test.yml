@@ -13,7 +13,7 @@ resources:
   repositories:
     - repository: mobile-ui-tests
       type: github
-      ref: master
+      ref: feat/custom-working-directory
       name: OutSystems/mobile-ui-tests
       endpoint: OutSystems
     - repository: MobilePluginsODCPipeline
@@ -62,7 +62,7 @@ stages:
             inputs:
               workingFile: '$(System.DefaultWorkingDirectory)/mobile-ui-tests/.npmrc'
           - task: CmdLine@2
-            name: install_dependencies_upload
+            name: install_dep_cp2
             displayName: 'Install dependencies using yarn'
             inputs:
               script: 'yarn'

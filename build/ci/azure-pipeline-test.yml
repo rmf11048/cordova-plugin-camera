@@ -42,7 +42,7 @@ stages:
               workingDirectory: $(System.DefaultWorkingDirectory)/MobilePluginsODCPipeline
           - template: build/ci/refresh-sampleapp.yaml@MobilePluginsODCPipeline
             parameters:
-              secretFileName: "eng-osrd-us-02-StampsInformation.json"
+              secretFileName: "eng-osrd-mobile-forge-StampsInformation.json"
               SAMPLEAPP_APP_KEY: "3c0451ef-0d99-4e09-adb5-718e009deb9d"
               workingDirectory: $(System.DefaultWorkingDirectory)/MobilePluginsODCPipeline
           - script: |

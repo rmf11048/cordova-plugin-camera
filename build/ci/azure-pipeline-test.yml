@@ -35,7 +35,7 @@ stages:
           - checkout: MobilePluginsODCPipeline
           - template: build/ci/update-wrapper.yaml@MobilePluginsODCPipeline
             parameters:
-              secretFileName: "eng-osrd-us-02-StampsInformation.json"
+              secretFileName: "eng-osrd-mobile-forge-StampsInformation.json"
               PLUGIN_APP_KEY: "7acb2c1d-51bf-4ef4-8cb8-a05573501b6a"
               PLUGIN_UPDATE_URL: "https://github.com/OutSystems/cordova-plugin-camera#$(Build.SourceBranchName)"
               PLUGIN_UPDATE_VERSION: "$(Build.SourceBranchName)"
@@ -62,7 +62,7 @@ stages:
             inputs:
               workingFile: '$(System.DefaultWorkingDirectory)/mobile-ui-tests/.npmrc'
           - task: CmdLine@2
-            name: install_dep_cp
+            name: install_dep_cp2
             displayName: 'Install dependencies using yarn'
             inputs:
               script: 'yarn'

@@ -211,4 +211,18 @@ cameraExport.recordVideo = function(successCallback, errorCallback, options) {
     exec(successCallback, errorCallback, 'Camera', 'recordVideo', args);
 }
 
+
+cameraExport.chooseFromGallery = function(successCallback, errorCallback, options){
+    argscheck.checkArgs('fFO', 'Camera.chooseFromGallery', arguments);
+    options = options || {};
+
+    let mediaType = !!options.mediaType;
+    let allowEdit = !!options.allowEdit;
+    let allowMultipleSelection = !!options.allowMultipleSelection;
+
+    let args = [mediaType, allowEdit, allowMultipleSelection];
+
+    exec(successCallback, errorCallback, 'Camera', 'chooseFromGallery', args);
+}
+
 module.exports = cameraExport;

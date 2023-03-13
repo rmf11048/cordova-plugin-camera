@@ -260,6 +260,7 @@ Optional parameters to customize the camera settings.
 | destinationType | <code>[DestinationType](#module_Camera.DestinationType)</code> | <code>FILE_URI</code> | Choose the format of the return value. |
 | sourceType | <code>[PictureSourceType](#module_Camera.PictureSourceType)</code> | <code>CAMERA</code> | Set the source of the picture. |
 | allowEdit | <code>Boolean</code> | <code>false</code> | Allow simple editing of image before selection. |
+| allowMultipleSelection | <code>Boolean</code> | <code>false</code> | Allow the selection of more than one media file from gallery. |
 | encodingType | <code>[EncodingType](#module_Camera.EncodingType)</code> | <code>JPEG</code> | Choose the  returned image file's encoding. |
 | targetWidth | <code>number</code> |  | Width in pixels to scale image. Must be used with `targetHeight`. Aspect ratio remains constant. |
 | targetHeight | <code>number</code> |  | Height in pixels to scale image. Must be used with `targetWidth`. Aspect ratio remains constant. |

@@ -200,8 +200,16 @@ cameraExport.cleanup = function (successCallback, errorCallback) {
     exec(successCallback, errorCallback, 'Camera', 'editPicture', args);
 };
 
-cameraExport.captureVideo = function(successCallback, errorCallback) {
-    exec(successCallback, errorCallback, 'Camera', 'captureVideo');
+cameraExport.recordVideo = function(successCallback, errorCallback, options) {
+    argscheck.checkArgs('fFO', 'Camera.recordVideo', arguments);
+    options = options || {};
+    var getValue = argscheck.getValue;
+
+    var allowEdit = !!options.allowEdit;
+
+    var args = [allowEdit];
+
+    exec(successCallback, errorCallback, 'Camera', 'recordVideo', args);
 }
 
 module.exports = cameraExport;

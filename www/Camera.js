@@ -219,7 +219,7 @@ cameraExport.chooseFromGallery = function(successCallback, errorCallback, option
     let mediaType = !!options.mediaType;
     let allowMultipleSelection = !!options.allowMultipleSelection;
 
-    let args = [mediaType, allowMultipleSelection];
+    let args = [{mediaType, allowMultipleSelection}];
 
     exec(successCallback, errorCallback, 'Camera', 'chooseFromGallery', args);
 }

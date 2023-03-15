@@ -9,6 +9,8 @@ The changes documented here do not include those from the original repository.
 ## [Unreleased]
 
 ### Features
+- [Android] Add `Save to Gallery` property to `Record Video`, along with a new `Media Result` output property (https://outsystemsrd.atlassian.net/browse/RMET-2325)
+- [Android] Refactor `Record Video` (https://outsystemsrd.atlassian.net/browse/RMET-2336)
 - [iOS] Add `Thumbnail` property to `Record Video` returning structure (https://outsystemsrd.atlassian.net/browse/RMET-2352).
 - [iOS] Add `Save to Gallery` property to `Record Video`, along with a new `Media Result` output property (https://outsystemsrd.atlassian.net/browse/RMET-2324).
 - [Bridge] Add `Choose from Gallery` client action (https://outsystemsrd.atlassian.net/browse/RMET-2332).
@@ -88,3 +90,4 @@ The changes documented here do not include those from the original repository.
 ## [4.2.0-OS7]
 ### Fixes
 - Fix: Fixed iOS implementation to ask for photo library permissions when needed (https://outsystemsrd.atlassian.net/browse/RMET-733)
+

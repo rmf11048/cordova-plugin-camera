@@ -36,9 +36,12 @@ import com.outsystems.plugins.camera.controller.helper.OSCAMRExifHelper
 import com.outsystems.plugins.camera.controller.helper.OSCAMRFileHelper
 import com.outsystems.plugins.camera.controller.helper.OSCAMRImageHelper
 import com.outsystems.plugins.camera.controller.helper.OSCAMRMediaHelper
-import com.outsystems.plugins.camera.model.MediaType
+import com.outsystems.plugins.camera.model.OSCAMMediaType
 import com.outsystems.plugins.camera.model.OSCAMRError
 import com.outsystems.plugins.camera.model.OSCAMRParameters
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.apache.cordova.*
 import org.json.JSONArray
 import org.json.JSONException
@@ -94,6 +97,9 @@ class CameraLauncher : CordovaPlugin() {
     private var camController: OSCAMRController? = null
     private var camParameters: OSCAMRParameters? = null
 
+    private var galleryMediaType: OSCAMMediaType = OSCAMMediaType.IMAGE_AND_VIDEO
+    private var allowMultipleSelection: Boolean = false
+
     override fun pluginInitialize() {
         super.pluginInitialize()
 
@@ -140,82 +146,86 @@ class CameraLauncher : CordovaPlugin() {
          * TODO: Remove this condition when we start to use cordova build command to build our applications.
          */
         if (applicationId == null) applicationId = cordova.activity.packageName
-        if (action == "takePicture") {
-            srcType = CAMERA
-            destType = FILE_URI
-            saveToPhotoAlbum = false
-            targetHeight = 0
-            targetWidth = 0
-            encodingType = JPEG
-            mediaType = PICTURE
-            mQuality = 50
 
-            //Take the values from the arguments if they're not already defined (this is tricky)
-            mQuality = args.getInt(0)
-            targetWidth = args.getInt(1)
-            targetHeight = args.getInt(2)
-            encodingType = args.getInt(3)
-            allowEdit = args.getBoolean(4)
-            correctOrientation = args.getBoolean(5)
-            saveToPhotoAlbum = args.getBoolean(6)
-            destType = args.getInt(8)
-            srcType = args.getInt(9)
-            mediaType = args.getInt(10)
-
-            // If the user specifies a 0 or smaller width/height
-            // make it -1 so later comparisons succeed
-            if (targetWidth < 1) {
-                targetWidth = -1
-            }
-            if (targetHeight < 1) {
-                targetHeight = -1
-            }
-
-            // We don't return full-quality PNG files. The camera outputs a JPEG
-            // so requesting it as a PNG provides no actual benefit
-            if (targetHeight == -1 && targetWidth == -1 && mQuality == 100 &&
-                !correctOrientation && encodingType == PNG && srcType == CAMERA
-            ) {
+        when(action) {
+            "takePicture" -> {
+                srcType = CAMERA
+                destType = FILE_URI
+                saveToPhotoAlbum = false
+                targetHeight = 0
+                targetWidth = 0
                 encodingType = JPEG
-            }
+                mediaType = PICTURE
+                mQuality = 50
 
-            //create CameraParameters
-            camParameters = OSCAMRParameters(
-                mQuality,
-                targetWidth,
-                targetHeight,
-                encodingType,
-                mediaType,
-                allowEdit,
-                correctOrientation,
-                saveToPhotoAlbum
-            )
+                //Take the values from the arguments if they're not already defined (this is tricky)
+                mQuality = args.getInt(0)
+                targetWidth = args.getInt(1)
+                targetHeight = args.getInt(2)
+                encodingType = args.getInt(3)
+                allowEdit = args.getBoolean(4)
+                correctOrientation = args.getBoolean(5)
+                saveToPhotoAlbum = args.getBoolean(6)
+                destType = args.getInt(8)
+                srcType = args.getInt(9)
+                mediaType = args.getInt(10)
 
-            try {
-                if (srcType == CAMERA) {
-                    callTakePicture(destType, encodingType)
-                } else if (srcType == PHOTOLIBRARY || srcType == SAVEDPHOTOALBUM) {
-                    callGetImage(srcType, destType, encodingType)
+                // If the user specifies a 0 or smaller width/height
+                // make it -1 so later comparisons succeed
+                if (targetWidth < 1) {
+                    targetWidth = -1
                 }
-            } catch (e: IllegalArgumentException) {
-                callbackContext.error("Illegal Argument Exception")
-                val r = PluginResult(PluginResult.Status.ERROR)
+                if (targetHeight < 1) {
+                    targetHeight = -1
+                }
+
+                // We don't return full-quality PNG files. The camera outputs a JPEG
+                // so requesting it as a PNG provides no actual benefit
+                if (targetHeight == -1 && targetWidth == -1 && mQuality == 100 &&
+                    !correctOrientation && encodingType == PNG && srcType == CAMERA
+                ) {
+                    encodingType = JPEG
+                }
+
+                //create CameraParameters
+                camParameters = OSCAMRParameters(
+                    mQuality,
+                    targetWidth,
+                    targetHeight,
+                    encodingType,
+                    mediaType,
+                    allowEdit,
+                    correctOrientation,
+                    saveToPhotoAlbum
+                )
+
+                try {
+                    if (srcType == CAMERA) {
+                        callTakePicture(destType, encodingType)
+                    } else if (srcType == PHOTOLIBRARY || srcType == SAVEDPHOTOALBUM) {
+                        callGetImage(srcType, destType, encodingType)
+                    }
+                } catch (e: IllegalArgumentException) {
+                    callbackContext.error("Illegal Argument Exception")
+                    val r = PluginResult(PluginResult.Status.ERROR)
+                    callbackContext.sendPluginResult(r)
+                    return true
+                }
+                val r = PluginResult(PluginResult.Status.NO_RESULT)
+                r.keepCallback = true
                 callbackContext.sendPluginResult(r)
-                return true
+
             }
-            val r = PluginResult(PluginResult.Status.NO_RESULT)
-            r.keepCallback = true
-            callbackContext.sendPluginResult(r)
-            return true
-        } else if (action == "editPicture") {
-            callEditImage(args)
-            return true
-        } else if (action == "recordVideo") {
-            saveVideoToGallery = args.getBoolean(0)
-            callCaptureVideo(saveVideoToGallery)
-            return true
+            "editPicture" -> callEditImage(args)
+            "recordVideo" -> {
+                saveVideoToGallery = args.getBoolean(0)
+                callCaptureVideo(saveVideoToGallery)
+            }
+            "chooseFromGallery" -> callChooseFromGalleryWithPermissions(args)
+            else -> return false
         }
-        return false
+
+        return true
     }// Create the cache directory if it doesn't exist
 
     //--------------------------------------------------------------------------
@@ -355,6 +365,58 @@ class CameraLauncher : CordovaPlugin() {
     }
 
     /**
+     * Calls the "Choose from gallery" method and the relevant permissions to access the gallery.
+     * @param args A Json array containing the parameters for "Choose from gallery".
+     */
+    fun callChooseFromGalleryWithPermissions(args: JSONArray) {
+
+        try {
+            val parameters = args.getJSONObject(0)
+            galleryMediaType = OSCAMMediaType.fromValue(parameters.getInt("mediaType"))
+            allowMultipleSelection = parameters.getBoolean("allowMultipleSelection")
+        }
+        catch(_: Exception) {
+            sendError(OSCAMRError.GENERIC_CHOOSE_MULTIMEDIA_ERROR)
+            return
+        }
+
+        if (Build.VERSION.SDK_INT < 33
+            && !PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+            PermissionHelper.requestPermission(
+                this,
+                CHOOSE_FROM_GALLERY_PERMISSION_CODE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+        }
+        else if (Build.VERSION.SDK_INT >= 33
+            && (!PermissionHelper.hasPermission(this, READ_MEDIA_IMAGES)
+                    || !PermissionHelper.hasPermission(this, READ_MEDIA_VIDEO))) {
+            PermissionHelper.requestPermissions(
+                this,
+                CHOOSE_FROM_GALLERY_PERMISSION_CODE,
+                arrayOf(READ_MEDIA_VIDEO, READ_MEDIA_IMAGES)
+            )
+        }
+        else {
+            callChooseFromGallery()
+        }
+    }
+
+    /**
+     * Calls the "Choose from gallery" method.
+     */
+    private fun callChooseFromGallery() {
+        cordova.setActivityResultCallback(this)
+        camController?.chooseFromGallery(
+            this.cordova.activity,
+            galleryMediaType,
+            allowMultipleSelection,
+            CHOOSE_FROM_GALLERY_REQUEST_CODE
+        )
+    }
+
+    /**
      * Called when the camera view exits.
      *
      * @param requestCode The request code originally supplied to startActivityForResult(),
@@ -363,6 +425,23 @@ class CameraLauncher : CordovaPlugin() {
      * @param intent      An Intent, which can return result data to the caller (various data can be attached to Intent "extras").
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+
+        if(requestCode == CHOOSE_FROM_GALLERY_REQUEST_CODE) {
+
+            if(camController == null) {
+                sendError(OSCAMRError.GENERIC_CHOOSE_MULTIMEDIA_ERROR)
+                return
+            }
+
+            CoroutineScope(Dispatchers.Default).launch {
+                camController!!.onChooseFromGalleryResult(
+                    cordova.activity,
+                    resultCode,
+                    intent,
+                    { sendSuccessfulResult(it) },
+                    { sendError(it) })
+            }
+        }
 
         // Get src and dest types from request code for a Camera Activity
         val srcType = requestCode / 16 - 1
@@ -525,7 +604,7 @@ class CameraLauncher : CordovaPlugin() {
                     requestCode != OSCAMRMediaHelper.REQUEST_VIDEO_CAPTURE,
                     { newUri, thumbnail ->
                         val myMap = mutableMapOf<String, Any>(
-                            "type" to MediaType.VIDEO.ordinal,
+                            "type" to OSCAMMediaType.VIDEO.ordinal,
                             "uri" to newUri,
                             "thumbnail" to thumbnail
                         )
@@ -592,9 +671,8 @@ class CameraLauncher : CordovaPlugin() {
                 camController?.takePicture(this.cordova.activity, destType, encodingType)
             }
             SAVE_TO_ALBUM_SEC -> callGetImage(srcType, destType, encodingType)
-            CAPTURE_VIDEO_SEC -> {
-                callCaptureVideo(saveVideoToGallery)
-            }
+            CAPTURE_VIDEO_SEC -> callCaptureVideo(saveVideoToGallery)
+            CHOOSE_FROM_GALLERY_PERMISSION_CODE -> callChooseFromGallery()
         }
     }
 
@@ -651,6 +729,17 @@ class CameraLauncher : CordovaPlugin() {
             imageFilePath = state.getString(IMAGE_FILE_PATH_KEY)
         }
         this.callbackContext = callbackContext
+    }
+
+    /**
+     * Sends a successful result to cordova.
+     * @param result The result data to be sent to cordova.
+     */
+    private fun sendSuccessfulResult(result: Any) {
+        val gson = GsonBuilder().create()
+        val resultJson = gson.toJson(result)
+        val pluginResult = PluginResult(PluginResult.Status.OK, resultJson)
+        this.callbackContext?.sendPluginResult(pluginResult)
     }
 
     private fun sendError(error: OSCAMRError) {
@@ -721,6 +810,9 @@ class CameraLauncher : CordovaPlugin() {
         //for errors
         private const val ERROR_FORMAT_PREFIX = "OS-PLUG-CAMR-"
         protected val permissions = createPermissionArray()
+
+        private const val CHOOSE_FROM_GALLERY_REQUEST_CODE = 869456849
+        private const val CHOOSE_FROM_GALLERY_PERMISSION_CODE = 869454849
 
         private fun createPermissionArray(): Array<String> {
             return if (Build.VERSION.SDK_INT < 33) {

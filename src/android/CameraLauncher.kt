@@ -223,6 +223,7 @@ class CameraLauncher : CordovaPlugin() {
                 callCaptureVideo(saveVideoToGallery)
             }
             "chooseFromGallery" -> callChooseFromGalleryWithPermissions(args)
+            "playVideo" -> callPlayVideo(args)
             else -> return false
         }
 
@@ -415,6 +416,27 @@ class CameraLauncher : CordovaPlugin() {
             allowMultipleSelection,
             CHOOSE_FROM_GALLERY_REQUEST_CODE
         )
+    }
+
+    /**
+     * Calls the "Play Video" method.
+     * @param args A Json array containing the parameters for the feature.
+     */
+    private fun callPlayVideo(args: JSONArray) {
+        try {
+            val videoUri = args.getJSONObject(0).getString("videoURI")
+            camController?.playVideo(cordova.activity, videoUri,
+                {
+                    sendSuccessfulResult("")
+                },{
+                    sendError(it)
+                }
+            )
+        }
+        catch(_: Exception) {
+            sendError(OSCAMRError.PLAY_VIDEO_GENERAL_ERROR)
+            return
+        }
     }
 
     /**

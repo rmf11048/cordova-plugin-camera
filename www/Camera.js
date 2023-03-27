@@ -224,4 +224,16 @@ cameraExport.chooseFromGallery = function(successCallback, errorCallback, option
     exec(successCallback, errorCallback, 'Camera', 'chooseFromGallery', args);
 }
 
+cameraExport.playVideo = function(successCallback, errorCallback, options){
+    argscheck.checkArgs('fFO', 'Camera.playVideo', arguments);
+    options = options || {};
+
+    let videoURI = options.uri;
+
+    let args = [{videoURI}];
+
+    exec(successCallback, errorCallback, 'Camera', 'playVideo', args);
+}
+
+
 module.exports = cameraExport;

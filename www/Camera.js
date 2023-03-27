@@ -235,5 +235,4 @@ cameraExport.playVideo = function(successCallback, errorCallback, options){
     exec(successCallback, errorCallback, 'Camera', 'playVideo', args);
 }
 
-
 module.exports = cameraExport;

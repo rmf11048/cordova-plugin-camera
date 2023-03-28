@@ -424,7 +424,7 @@ class CameraLauncher : CordovaPlugin() {
      */
     private fun callPlayVideo(args: JSONArray) {
         try {
-            val videoUri = args.getJSONObject(0).getString("videoURI")
+            val videoUri = args.getJSONObject(0).getString(VIDEO_URI)
             camController?.playVideo(cordova.activity, videoUri,
                 {
                     sendSuccessfulResult("")
@@ -838,6 +838,7 @@ class CameraLauncher : CordovaPlugin() {
         private const val CHOOSE_FROM_GALLERY_PERMISSION_CODE = 869454849
 
         private const val STORE = "CameraStore"
+        private const val VIDEO_URI = "videoURI"
 
         private fun createPermissionArray(): Array<String> {
             return if (Build.VERSION.SDK_INT < 33) {

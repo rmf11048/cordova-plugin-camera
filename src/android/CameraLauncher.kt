@@ -618,7 +618,7 @@ class CameraLauncher : CordovaPlugin() {
                     fromPreferences.let {  uri = Uri.parse(fromPreferences) }
                 }
                 if(cordova.activity == null) {
-                    sendError(OSCAMRError.CONTEXT_ERROR)
+                    sendError(OSCAMRError.CAPTURE_VIDEO_ERROR)
                     return
                 }
                 camController?.processResultFromVideo(

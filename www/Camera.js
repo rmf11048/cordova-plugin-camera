@@ -204,7 +204,7 @@ cameraExport.recordVideo = function(successCallback, errorCallback, options) {
     argscheck.checkArgs('fFO', 'Camera.recordVideo', arguments);
     options = options || {};
 
-    var saveToGallery = !!options.saveToGallery;
+    let saveToGallery = !!options.saveToGallery;
     let includeMetadata = !!options.includeMetadata;
 
     var args = [{saveToGallery, includeMetadata}];

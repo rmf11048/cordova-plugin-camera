@@ -205,12 +205,12 @@ cameraExport.recordVideo = function(successCallback, errorCallback, options) {
     options = options || {};
 
     var saveToGallery = !!options.saveToGallery;
+    let includeMetadata = !!options.includeMetadata;
 
-    var args = [saveToGallery];
+    var args = [{saveToGallery, includeMetadata}];
 
     exec(successCallback, errorCallback, 'Camera', 'recordVideo', args);
 }
-
 
 cameraExport.chooseFromGallery = function(successCallback, errorCallback, options){
     argscheck.checkArgs('fFO', 'Camera.chooseFromGallery', arguments);
@@ -218,8 +218,9 @@ cameraExport.chooseFromGallery = function(successCallback, errorCallback, option
 
     let mediaType = options.mediaType;
     let allowMultipleSelection = !!options.allowMultipleSelection;
+    let includeMetadata = !!options.includeMetadata;
 
-    let args = [{mediaType, allowMultipleSelection}];
+    let args = [{mediaType, allowMultipleSelection, includeMetadata}];
 
     exec(successCallback, errorCallback, 'Camera', 'chooseFromGallery', args);
 }

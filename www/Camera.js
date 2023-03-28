@@ -210,7 +210,7 @@ cameraExport.recordVideo = function(successCallback, errorCallback, options) {
     var args = [{saveToGallery, includeMetadata}];
 
     exec(successCallback, errorCallback, 'Camera', 'recordVideo', args);
-}
+};
 
 cameraExport.chooseFromGallery = function(successCallback, errorCallback, options){
     argscheck.checkArgs('fFO', 'Camera.chooseFromGallery', arguments);

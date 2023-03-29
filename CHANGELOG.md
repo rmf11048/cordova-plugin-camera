@@ -10,6 +10,7 @@ The changes documented here do not include those from the original repository.
 - [Bridge] Add `include Metadata` client action input parameter (https://outsystemsrd.atlassian.net/browse/RMET-2346).
 
 ### Features
+- [Android] Play Video for Android (https://outsystemsrd.atlassian.net/browse/RMET-2359)
 - [Bridge] Add `Play Video` client action (https://outsystemsrd.atlassian.net/browse/RMET-2361).
 - [Android] Add `Choose from Gallery` client action, allowing a multiple or single selection of pictures and/or videos (https://outsystemsrd.atlassian.net/browse/RMET-2327)
 - [Android] Add `Thumbnail` property to `Media Result` (https://outsystemsrd.atlassian.net/browse/RMET-2351)

@@ -359,6 +359,7 @@ class CameraLauncher : CordovaPlugin() {
     }
 
     fun callCaptureVideo(saveVideoToGallery: Boolean) {
+
         if (!PermissionHelper.hasPermission(this, Manifest.permission.CAMERA)) {
             PermissionHelper.requestPermission(this, CAPTURE_VIDEO_SEC, Manifest.permission.CAMERA)
             return
@@ -377,8 +378,9 @@ class CameraLauncher : CordovaPlugin() {
 
         try {
             val parameters = args.getJSONObject(0)
-            galleryMediaType = OSCAMRMediaType.fromValue(parameters.getInt("mediaType"))
-            allowMultipleSelection = parameters.getBoolean("allowMultipleSelection")
+            galleryMediaType = OSCAMRMediaType.fromValue(parameters.getInt(MEDIA_TYPE))
+            allowMultipleSelection = parameters.getBoolean(ALLOW_MULTIPLE)
+            includeMetadata = parameters.getBoolean(INCLUDE_METADATA)
         }
         catch(_: Exception) {
             sendError(OSCAMRError.GENERIC_CHOOSE_MULTIMEDIA_ERROR)
@@ -464,6 +466,7 @@ class CameraLauncher : CordovaPlugin() {
                     cordova.activity,
                     resultCode,
                     intent,
+                    includeMetadata,
                     { sendSuccessfulResult(it) },
                     { sendError(it) })
             }
@@ -628,6 +631,7 @@ class CameraLauncher : CordovaPlugin() {
                     cordova.activity,
                     uri,
                     requestCode != OSCAMRMediaHelper.REQUEST_VIDEO_CAPTURE,
+                    includeMetadata,
                     { mediaResult ->
                         val gson = GsonBuilder().create()
                         val resultJson = gson.toJson(mediaResult)
@@ -839,6 +843,8 @@ class CameraLauncher : CordovaPlugin() {
         private const val VIDEO_URI = "videoURI"
         private const val SAVE_TO_GALLERY = "saveToGallery"
         private const val INCLUDE_METADATA = "includeMetadata"
+        private const val ALLOW_MULTIPLE = "allowMultipleSelection"
+        private const val MEDIA_TYPE = "mediaType"
 
         private fun createPermissionArray(): Array<String> {
             return if (Build.VERSION.SDK_INT < 33) {

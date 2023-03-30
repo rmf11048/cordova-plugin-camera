@@ -627,21 +627,24 @@ class CameraLauncher : CordovaPlugin() {
                     sendError(OSCAMRError.CAPTURE_VIDEO_ERROR)
                     return
                 }
-                camController?.processResultFromVideo(
-                    cordova.activity,
-                    uri,
-                    requestCode != OSCAMRMediaHelper.REQUEST_VIDEO_CAPTURE,
-                    includeMetadata,
-                    { mediaResult ->
-                        val gson = GsonBuilder().create()
-                        val resultJson = gson.toJson(mediaResult)
-                        val pluginResult = PluginResult(PluginResult.Status.OK, resultJson)
-                        callbackContext?.sendPluginResult(pluginResult)
-                    },
-                    {
-                        sendError(OSCAMRError.CAPTURE_VIDEO_ERROR)
-                    }
-                )
+
+                CoroutineScope(Dispatchers.Default).launch {
+                    camController?.processResultFromVideo(
+                        cordova.activity,
+                        uri,
+                        requestCode != OSCAMRMediaHelper.REQUEST_VIDEO_CAPTURE,
+                        includeMetadata,
+                        { mediaResult ->
+                            val gson = GsonBuilder().create()
+                            val resultJson = gson.toJson(mediaResult)
+                            val pluginResult = PluginResult(PluginResult.Status.OK, resultJson)
+                            callbackContext?.sendPluginResult(pluginResult)
+                        },
+                        {
+                            sendError(OSCAMRError.CAPTURE_VIDEO_ERROR)
+                        }
+                    )
+                }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 sendError(OSCAMRError.CAPTURE_VIDEO_CANCELLED_ERROR)
             } else {

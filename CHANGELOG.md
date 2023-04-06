@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
+- [Android] Update Error Codes and Error Messages (https://outsystemsrd.atlassian.net/browse/RMET-2400).
+- [Android] Add compression to big images (https://outsystemsrd.atlassian.net/browse/RMET-2409).
+- [iOS] Update Error Codes and Error Messages (https://outsystemsrd.atlassian.net/browse/RMET-2400).
 - [iOS] Add return of Metadata to `Choose from Gallery` and `Record Video` (https://outsystemsrd.atlassian.net/browse/RMET-2349).
 - [Bridge] Add `include Metadata` client action input parameter (https://outsystemsrd.atlassian.net/browse/RMET-2346).
 

@@ -8,7 +8,18 @@ The changes documented here do not include those from the original repository.
 
 ## [Unreleased]
 
+## [4.2.0-OS41]
+
 ### Features
+- [Android] Ask for gallery permissions for RecordVideo (https://outsystemsrd.atlassian.net/browse/RMET-2472).
+- [Android] Update Error Codes and Error Messages (https://outsystemsrd.atlassian.net/browse/RMET-2400).
+- [Android] Add compression to big images (https://outsystemsrd.atlassian.net/browse/RMET-2409).
+- [iOS] Update Error Codes and Error Messages (https://outsystemsrd.atlassian.net/browse/RMET-2400).
+- [iOS] Add return of Metadata to `Choose from Gallery` and `Record Video` (https://outsystemsrd.atlassian.net/browse/RMET-2349).
+- [Bridge] Add `include Metadata` client action input parameter (https://outsystemsrd.atlassian.net/browse/RMET-2346).
+- [iOS] Add `Play Video` client action (https://outsystemsrd.atlassian.net/browse/RMET-2360).
+- [Android] Play Video for Android (https://outsystemsrd.atlassian.net/browse/RMET-2359)
+- [Bridge] Add `Play Video` client action (https://outsystemsrd.atlassian.net/browse/RMET-2361).
 - [Android] Add `Choose from Gallery` client action, allowing a multiple or single selection of pictures and/or videos (https://outsystemsrd.atlassian.net/browse/RMET-2327)
 - [Android] Add `Thumbnail` property to `Media Result` (https://outsystemsrd.atlassian.net/browse/RMET-2351)
 - [iOS] Implement `Choose from Gallery` client action, allowing a multiple or single selection of pictures and/or videos (https://outsystemsrd.atlassian.net/browse/RMET-2326).

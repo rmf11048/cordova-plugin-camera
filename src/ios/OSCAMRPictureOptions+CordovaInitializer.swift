@@ -40,6 +40,6 @@ extension OSCAMRPictureOptions {
             direction = .back
         }
         
-        self.init(quality: quality, size: targetSize, correctOrientation: correctOrientation, encodingType: encodingType, saveToPhotoAlbum: saveToPhotoAlbum, direction: direction, allowEdit: allowEdit)
+        self.init(quality: quality, size: targetSize, correctOrientation: correctOrientation, encodingType: encodingType, saveToPhotoAlbum: saveToPhotoAlbum, direction: direction, allowEdit: allowEdit, returnMetadata: false)
     }
 }

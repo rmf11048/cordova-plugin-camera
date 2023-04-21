@@ -37,7 +37,7 @@ import com.outsystems.plugins.camera.controller.helper.OSCAMRExifHelper
 import com.outsystems.plugins.camera.controller.helper.OSCAMRFileHelper
 import com.outsystems.plugins.camera.controller.helper.OSCAMRImageHelper
 import com.outsystems.plugins.camera.controller.helper.OSCAMRMediaHelper
-import com.outsystems.plugins.camera.model.OSCAMMediaType
+import com.outsystems.plugins.camera.model.OSCAMRMediaType
 import com.outsystems.plugins.camera.model.OSCAMRError
 import com.outsystems.plugins.camera.model.OSCAMRParameters
 import kotlinx.coroutines.CoroutineScope
@@ -84,6 +84,8 @@ class CameraLauncher : CordovaPlugin() {
             = false
     private var saveVideoToGallery
             = false // Should we allow the user to save the video in the gallery
+    private var includeMetadata
+            = false // Should we allow the app to obtain metadata about the media item
     var callbackContext: CallbackContext? = null
     private var numPics = 0
     private var conn // Used to update gallery app with newly-written files
@@ -98,7 +100,7 @@ class CameraLauncher : CordovaPlugin() {
     private var camController: OSCAMRController? = null
     private var camParameters: OSCAMRParameters? = null
 
-    private var galleryMediaType: OSCAMMediaType = OSCAMMediaType.IMAGE_AND_VIDEO
+    private var galleryMediaType: OSCAMRMediaType = OSCAMRMediaType.IMAGE_AND_VIDEO
     private var allowMultipleSelection: Boolean = false
 
     override fun pluginInitialize() {
@@ -116,6 +118,8 @@ class CameraLauncher : CordovaPlugin() {
             OSCAMRMediaHelper(),
             OSCAMRImageHelper()
         )
+
+        camController?.deleteVideoFilesFromCache(cordova.activity)
 
     }
 
@@ -219,10 +223,12 @@ class CameraLauncher : CordovaPlugin() {
             }
             "editPicture" -> callEditImage(args)
             "recordVideo" -> {
-                saveVideoToGallery = args.getBoolean(0)
+                saveVideoToGallery = args.getJSONObject(0).getBoolean(SAVE_TO_GALLERY)
+                includeMetadata = args.getJSONObject(0).getBoolean(INCLUDE_METADATA)
                 callCaptureVideo(saveVideoToGallery)
             }
             "chooseFromGallery" -> callChooseFromGalleryWithPermissions(args)
+            "playVideo" -> callPlayVideo(args)
             else -> return false
         }
 
@@ -355,10 +361,50 @@ class CameraLauncher : CordovaPlugin() {
     }
 
     fun callCaptureVideo(saveVideoToGallery: Boolean) {
-        if (!PermissionHelper.hasPermission(this, Manifest.permission.CAMERA)) {
-            PermissionHelper.requestPermission(this, CAPTURE_VIDEO_SEC, Manifest.permission.CAMERA)
+
+        val cameraPermissionNeeded = !PermissionHelper.hasPermission(this, Manifest.permission.CAMERA)
+
+        val galleryPermissionNeeded = saveVideoToGallery && !((Build.VERSION.SDK_INT < 33 &&
+                PermissionHelper.hasPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) &&
+                PermissionHelper.hasPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) ||
+                (Build.VERSION.SDK_INT >= 33 &&
+                        PermissionHelper.hasPermission(this, READ_MEDIA_VIDEO) &&
+                        PermissionHelper.hasPermission(this, READ_MEDIA_IMAGES)))
+
+        if (cameraPermissionNeeded && galleryPermissionNeeded) {
+            PermissionHelper.requestPermissions(this, CAPTURE_VIDEO_SEC, permissions)
             return
         }
+
+        else if (cameraPermissionNeeded) {
+            PermissionHelper.requestPermission(
+                this,
+                CAPTURE_VIDEO_SEC,
+                Manifest.permission.CAMERA
+            )
+            return
+        }
+        else if (galleryPermissionNeeded) {
+            if (Build.VERSION.SDK_INT < 33) {
+                PermissionHelper.requestPermissions(
+                    this,
+                    CAPTURE_VIDEO_SEC,
+                    arrayOf(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                )
+            }
+            else {
+                PermissionHelper.requestPermissions(
+                    this,
+                    CAPTURE_VIDEO_SEC,
+                    arrayOf(READ_MEDIA_VIDEO, READ_MEDIA_IMAGES)
+                )
+            }
+            return
+        }
+
         cordova.setActivityResultCallback(this)
         camController?.captureVideo(cordova.activity, saveVideoToGallery) {
             sendError(it)
@@ -373,8 +419,9 @@ class CameraLauncher : CordovaPlugin() {
 
         try {
             val parameters = args.getJSONObject(0)
-            galleryMediaType = OSCAMMediaType.fromValue(parameters.getInt("mediaType"))
-            allowMultipleSelection = parameters.getBoolean("allowMultipleSelection")
+            galleryMediaType = OSCAMRMediaType.fromValue(parameters.getInt(MEDIA_TYPE))
+            allowMultipleSelection = parameters.getBoolean(ALLOW_MULTIPLE)
+            includeMetadata = parameters.getBoolean(INCLUDE_METADATA)
         }
         catch(_: Exception) {
             sendError(OSCAMRError.GENERIC_CHOOSE_MULTIMEDIA_ERROR)
@@ -418,6 +465,27 @@ class CameraLauncher : CordovaPlugin() {
     }
 
     /**
+     * Calls the "Play Video" method.
+     * @param args A Json array containing the parameters for the feature.
+     */
+    private fun callPlayVideo(args: JSONArray) {
+        try {
+            val videoUri = args.getJSONObject(0).getString(VIDEO_URI)
+            camController?.playVideo(cordova.activity, videoUri,
+                {
+                    sendSuccessfulResult("")
+                },{
+                    sendError(it)
+                }
+            )
+        }
+        catch(_: Exception) {
+            sendError(OSCAMRError.PLAY_VIDEO_GENERAL_ERROR)
+            return
+        }
+    }
+
+    /**
      * Called when the camera view exits.
      *
      * @param requestCode The request code originally supplied to startActivityForResult(),
@@ -439,6 +507,7 @@ class CameraLauncher : CordovaPlugin() {
                     cordova.activity,
                     resultCode,
                     intent,
+                    includeMetadata,
                     { sendSuccessfulResult(it) },
                     { sendError(it) })
             }
@@ -596,28 +665,27 @@ class CameraLauncher : CordovaPlugin() {
                     fromPreferences.let {  uri = Uri.parse(fromPreferences) }
                 }
                 if(cordova.activity == null) {
-                    sendError(OSCAMRError.CONTEXT_ERROR)
+                    sendError(OSCAMRError.CAPTURE_VIDEO_ERROR)
                     return
                 }
-                camController?.processResultFromVideo(
-                    cordova.activity,
-                    uri,
-                    requestCode != OSCAMRMediaHelper.REQUEST_VIDEO_CAPTURE,
-                    { newUri, thumbnail ->
-                        val myMap = mutableMapOf<String, Any>(
-                            "type" to OSCAMMediaType.VIDEO.ordinal,
-                            "uri" to newUri,
-                            "thumbnail" to thumbnail
-                        )
-                        val gson = GsonBuilder().create()
-                        val resultJson = gson.toJson(myMap)
-                        val pluginResult = PluginResult(PluginResult.Status.OK, resultJson)
-                        callbackContext?.sendPluginResult(pluginResult)
-                    },
-                    {
-                        sendError(OSCAMRError.CAPTURE_VIDEO_ERROR)
-                    }
-                )
+
+                CoroutineScope(Dispatchers.Default).launch {
+                    camController?.processResultFromVideo(
+                        cordova.activity,
+                        uri,
+                        requestCode != OSCAMRMediaHelper.REQUEST_VIDEO_CAPTURE,
+                        includeMetadata,
+                        { mediaResult ->
+                            val gson = GsonBuilder().create()
+                            val resultJson = gson.toJson(mediaResult)
+                            val pluginResult = PluginResult(PluginResult.Status.OK, resultJson)
+                            callbackContext?.sendPluginResult(pluginResult)
+                        },
+                        {
+                            sendError(OSCAMRError.CAPTURE_VIDEO_ERROR)
+                        }
+                    )
+                }
             } else if (resultCode == Activity.RESULT_CANCELED) {
                 sendError(OSCAMRError.CAPTURE_VIDEO_CANCELLED_ERROR)
             } else {
@@ -816,6 +884,11 @@ class CameraLauncher : CordovaPlugin() {
         private const val CHOOSE_FROM_GALLERY_PERMISSION_CODE = 869454849
 
         private const val STORE = "CameraStore"
+        private const val VIDEO_URI = "videoURI"
+        private const val SAVE_TO_GALLERY = "saveToGallery"
+        private const val INCLUDE_METADATA = "includeMetadata"
+        private const val ALLOW_MULTIPLE = "allowMultipleSelection"
+        private const val MEDIA_TYPE = "mediaType"
 
         private fun createPermissionArray(): Array<String> {
             return if (Build.VERSION.SDK_INT < 33) {

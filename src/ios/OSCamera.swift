@@ -19,14 +19,20 @@ class OSCamera: CDVPlugin {
     
     @objc(takePicture:)
     func takePicture(command: CDVInvokedUrlCommand) {
+        self.callbackId = command.callbackId
+
+        guard let parametersDictionary = command.argument(at: 0) as? [String: Any],
+              let parametersData = try? JSONSerialization.data(withJSONObject: parametersDictionary),
+              let parameters = try? JSONDecoder().decode(OSCAMRPictureParameters.self, from: parametersData)
+        else { return self.callback(error: .takePictureIssue) }
+
         // This 🔨 is required in order not to break Android's implementation
-        if (command.argument(at: 9) as? Int) == 0 {
-            self.chooseSinglePicture(command: command)
+        if parameters.sourceType == 0 {
+            self.chooseSinglePicture(allowEdit: parameters.allowEdit)
             return
         }
-        
-        self.callbackId = command.callbackId
-        let options = OSCAMRPictureOptions(command: command)
+    
+        let options = OSCAMRPictureOptions(from: parameters)
         
         self.commandDelegate.run { [weak self] in
             guard let self = self else { return }
@@ -65,10 +71,7 @@ class OSCamera: CDVPlugin {
         }
     }
     
-    func chooseSinglePicture(command: CDVInvokedUrlCommand) {
-        self.callbackId = command.callbackId
-        let allowEdit = command.argument(at: 4) as? Bool ?? false
-        
+    func chooseSinglePicture(allowEdit: Bool) {
         self.commandDelegate.run { [weak self] in
             guard let self = self else { return }
             self.plugin?.choosePicture(allowEdit)

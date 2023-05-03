@@ -163,17 +163,19 @@ class CameraLauncher : CordovaPlugin() {
                 mediaType = PICTURE
                 mQuality = 50
 
+                val parameters = args.getJSONObject(0)
                 //Take the values from the arguments if they're not already defined (this is tricky)
-                mQuality = args.getInt(0)
-                targetWidth = args.getInt(1)
-                targetHeight = args.getInt(2)
-                encodingType = args.getInt(3)
-                allowEdit = args.getBoolean(4)
-                correctOrientation = args.getBoolean(5)
-                saveToPhotoAlbum = args.getBoolean(6)
-                destType = args.getInt(8)
-                srcType = args.getInt(9)
-                mediaType = args.getInt(10)
+                mQuality = parameters.getInt(QUALITY)
+                targetWidth = parameters.getInt(WIDTH)
+                targetHeight = parameters.getInt(HEIGHT)
+                encodingType = parameters.getInt(ENCODING_TYPE)
+                allowEdit = parameters.getBoolean(ALLOW_EDIT)
+                correctOrientation = parameters.getBoolean(CORRECT_ORIENTATION)
+                saveToPhotoAlbum = parameters.getBoolean(SAVE_TO_ALBUM)
+                destType = parameters.getInt(DEST_TYPE)
+                srcType = parameters.getInt(SOURCE_TYPE)
+                mediaType = parameters.getInt(MEDIA_TYPE)
+                includeMetadata = parameters.getBoolean(INCLUDE_METADATA)
 
                 // If the user specifies a 0 or smaller width/height
                 // make it -1 so later comparisons succeed
@@ -889,6 +891,18 @@ class CameraLauncher : CordovaPlugin() {
         private const val INCLUDE_METADATA = "includeMetadata"
         private const val ALLOW_MULTIPLE = "allowMultipleSelection"
         private const val MEDIA_TYPE = "mediaType"
+
+        //take picture json
+        private const val QUALITY = "quality"
+        private const val WIDTH = "targetWidth"
+        private const val HEIGHT = "targetHeight"
+        private const val ENCODING_TYPE = "encodingType"
+        private const val ALLOW_EDIT = "allowEdit"
+        private const val CORRECT_ORIENTATION = "correctOrientation"
+        private const val SAVE_TO_ALBUM = "saveToPhotoAlbum"
+        private const val SOURCE_TYPE = "sourceType"
+        private const val CAMERA_DIRECTION = "caneraDirection"
+        private const val DEST_TYPE = "destinationType"
 
         private fun createPermissionArray(): Array<String> {
             return if (Build.VERSION.SDK_INT < 33) {

@@ -267,7 +267,8 @@ class CameraLauncher : CordovaPlugin() {
                 Build.VERSION.SDK_INT >= 33 &&
                 PermissionHelper.hasPermission(this, READ_MEDIA_VIDEO) &&
                 PermissionHelper.hasPermission(this, READ_MEDIA_IMAGES)
-        var takePicturePermission = PermissionHelper.hasPermission(this, Manifest.permission.CAMERA)
+        var takePicturePermission = PermissionHelper.hasPermission(this, Manifest.permission.CAMERA) && 
+                PermissionHelper.hasPermission(this, Manifest.permission.MANAGE_EXTERNAL_STORAGE)
 
         // CB-10120: The CAMERA permission does not need to be requested unless it is declared
         // in AndroidManifest.xml. This plugin does not declare it, but others may and so we must
@@ -296,14 +297,15 @@ class CameraLauncher : CordovaPlugin() {
             cordova.setActivityResultCallback(this)
             camController?.takePicture(cordova.activity, returnType, encodingType)
         } else if (saveAlbumPermission && !takePicturePermission) {
-            PermissionHelper.requestPermission(this, TAKE_PIC_SEC, Manifest.permission.CAMERA)
+            PermissionHelper.requestPermission(this, TAKE_PIC_SEC, arrayOf(Manifest.permission.CAMERA, Manifest.permission.MANAGE_EXTERNAL_STORAGE))
         } else if (!saveAlbumPermission && takePicturePermission && Build.VERSION.SDK_INT < 33) {
             PermissionHelper.requestPermissions(
                 this,
                 TAKE_PIC_SEC,
                 arrayOf(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.MANAGE_EXTERNAL_STORAGE
                 )
             )
         } else if (!saveAlbumPermission && takePicturePermission && Build.VERSION.SDK_INT >= 33) {

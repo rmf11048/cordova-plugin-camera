@@ -297,7 +297,8 @@ class CameraLauncher : CordovaPlugin() {
             cordova.setActivityResultCallback(this)
             camController?.takePicture(cordova.activity, returnType, encodingType)
         } else if (saveAlbumPermission && !takePicturePermission) {
-            PermissionHelper.requestPermission(this, TAKE_PIC_SEC, arrayOf(Manifest.permission.CAMERA, Manifest.permission.MANAGE_EXTERNAL_STORAGE))
+            PermissionHelper.requestPermission(this, TAKE_PIC_SEC, Manifest.permission.CAMERA)
+            PermissionHelper.requestPermission(this, TAKE_PIC_SEC, Manifest.permission.MANAGE_EXTERNAL_STORAGE)
         } else if (!saveAlbumPermission && takePicturePermission && Build.VERSION.SDK_INT < 33) {
             PermissionHelper.requestPermissions(
                 this,
